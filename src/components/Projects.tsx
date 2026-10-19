@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, Globe, Image as ImageIcon, X } from 'lucide-react'
 import { projects, type Project } from '../data'
 
-const snapshot = (p: Project) => `/projects/${p.id}.webp`
+const snapshot = (p: Project) => `${import.meta.env.BASE_URL}projects/${p.id}.webp`
 const host = (url: string) => new URL(url).host.replace(/^www\./, '')
 
 type Kind = 'Store' | 'Feature' | 'Landing' | 'Website'
