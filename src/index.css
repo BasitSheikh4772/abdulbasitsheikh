@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+@theme {
+  /* GitHub (Primer) dark palette */
+  --font-display: "Mona Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --font-sans: "Mona Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --color-ink: #0d1117;
+  --color-panel: #161b22;
+  --color-line: #30363d;
+  --color-accent: #58a6ff;
+  --color-accent2: #a371f7;
+  --color-gh-green: #3fb950;
+}
+
+body { background: var(--color-ink); color: #e6edf3; font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+::selection { background: rgba(56, 139, 253, .4); color: #fff; }
+
+.glass { background: #161b22; border: 1px solid #30363d; }
+.grad-text { background: linear-gradient(90deg, #79c0ff 0%, #d2a8ff 55%, #ff9bce 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.eyebrow { font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: .75rem; color: #8b949e; }
+
+
+/* frosted-glass navigation */
+.glass-nav {
+  background: rgba(22, 27, 34, .72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid #30363d;
+  box-shadow: inset 0 1px 0 rgba(240, 246, 252, .08), 0 10px 40px rgba(1, 4, 9, .6);
+}
+.glass-tip {
+  background: rgba(22, 27, 34, .86);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid #30363d;
+  box-shadow: 0 16px 48px rgba(1, 4, 9, .6), inset 0 1px 0 rgba(240, 246, 252, .06);
+}
+
+/* GitHub buttons */
+.btn-primary, .btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .7rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: .95rem; line-height: 1.2;
+  transition: background-color .15s, border-color .15s; cursor: pointer;
+}
+.btn-primary { background: #238636; color: #fff; border: 1px solid rgba(240, 246, 252, .1); }
+.btn-primary:hover { background: #2ea043; }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+.btn-secondary { background: #21262d; color: #e6edf3; border: 1px solid #30363d; }
+.btn-secondary:hover { background: #30363d; border-color: #8b949e; }
+
+.btn-sm { padding: .35rem .8rem; font-size: .85rem; }
+
+/* full-bleed 1px dividers between page sections, like github.com/features */
+main { overflow-x: clip; position: relative; }
+/* soft colour wash that sits BEHIND the globe canvas (never over it) */
+.hero-wash {
+  position: absolute; inset: 0 0 auto 0; height: 120vh; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(55% 55% at 82% 28%, rgba(31, 111, 235, .30), transparent 70%),
+    radial-gradient(45% 45% at 12% 8%, rgba(137, 87, 229, .26), transparent 70%),
+    linear-gradient(to bottom, transparent 70%, #0d1117 100%);
+}
+main > section { position: relative; }
+main > section:not(:first-child)::before {
+  content: ""; position: absolute; top: 0; left: 50%; width: 100vw; height: 1px; transform: translateX(-50%); background: #21262d;
+}
+
+/* ---- GitLab-style alternating sections (dark variant: slightly deeper tone + pixel-dither corner) ---- */
+main > section.theme-light::after {
+  content: ""; position: absolute; inset: 0; left: 50%; width: 100vw; transform: translateX(-50%);
+  background: #090c12; z-index: -2; pointer-events: none;
+}
+.pixel-fade {
+  position: absolute; top: 0; left: 50%; width: 100vw; height: 100%; transform: translateX(-50%); z-index: -1; pointer-events: none;
+  /* tech blueprint: glowing dot grid + faint lines + soft blue wash, fading out from the top-right corner */
+  background:
+    radial-gradient(circle, rgba(88, 166, 255, .55) 1px, transparent 1.6px) 0 0 / 36px 36px,
+    linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px) 0 0 / 72px 72px,
+    linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px) 0 0 / 72px 72px,
+    radial-gradient(640px circle at 88% 0%, rgba(88, 166, 255, .12), transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 90% at 90% 0%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(ellipse 70% 90% at 90% 0%, #000 0%, transparent 72%);
+}
+
+/* GitLab-style gradient call-to-action bar */
+.gradient-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1.35rem 1.6rem; font-weight: 600; font-size: 1.1rem; color: #fff;
+  border: 1px solid rgba(255, 255, 255, .22);
+  background: linear-gradient(90deg, rgba(226, 91, 49, .55), rgba(112, 71, 220, .6));
+  transition: filter .2s, transform .2s;
+}
+.gradient-bar:hover { filter: brightness(1.2); }
+.gradient-bar:hover svg { transform: translateX(4px); }
+.gradient-bar svg { transition: transform .2s; }
+.gradient-bar.alt { background: linear-gradient(90deg, rgba(34, 40, 49, .9), rgba(54, 46, 92, .9)); }
+
+:focus-visible { outline: 2px solid #58a6ff; outline-offset: 2px; border-radius: 6px; }
+
+/* the globe fades in smoothly when it is ready */
+@keyframes sceneIn { from { opacity: 0; } }
+.scene-in { animation: sceneIn 1s ease-out both; }
+
+/* lightweight stand-in for the 3D globe until it has loaded (currently unused) */
+.globe-ph {
+  position: absolute; z-index: 0; pointer-events: none; right: 6%; top: 50%; width: min(38vw, 520px); aspect-ratio: 1; transform: translateY(-50%);
+  border-radius: 50%; transition: opacity .9s ease;
+  background: radial-gradient(circle at 34% 28%, rgba(88, 166, 255, .22), rgba(15, 26, 51, .92) 46%, #070b14 76%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .05);
+}
+.globe-ph.is-off { opacity: 0; }
+@media (max-width: 800px) {
+  .globe-ph { right: 50%; top: auto; bottom: -34vw; transform: translateX(50%); width: 96vw; }
+}
+
+/* Primer-style dark scrollbar */
+html { scrollbar-color: #30363d #0d1117; }
+
+@keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* cursor-following spotlight on cards */
+.spot { position: relative; overflow: hidden; }
+.spot::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s;
+  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgba(88, 166, 255, .08), transparent 60%);
+}
+.spot:hover::before { opacity: 0; }
+.spot { transition: border-color .15s; }
+.spot:hover { border-color: #6e7681; }
+
+/* soft drifting colour wash behind everything */
+.aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.aurora::before, .aurora::after { content: ""; position: absolute; width: 60vw; height: 60vw; border-radius: 50%; filter: blur(120px); opacity: .22; }
+.aurora::before { background: #8957e5; top: -20vw; left: -15vw; animation: drift 22s ease-in-out infinite alternate; }
+.aurora::after { background: #1f6feb; bottom: -25vw; right: -15vw; opacity: .14; animation: drift 28s ease-in-out infinite alternate-reverse; }
+@keyframes drift { to { transform: translate(8vw, 6vw) scale(1.15); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora::before, .aurora::after { animation: none; }
+  [class*="animate-[bob"] { animation: none !important; }
+  [class*="animate-[marquee"] { animation: none !important; }
+}
