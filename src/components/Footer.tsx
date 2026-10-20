@@ -4,7 +4,6 @@ import { WhatsAppIcon } from './WhatsAppIcon'
 
 type Props = { name: string; email: string; whatsapp: string; linkedin: string; links: string[][] }
 
-const services = ['Shopify stores', 'WordPress & WooCommerce', 'Plugins & licensing', 'Custom web apps', 'AI chatbots', 'Cloud & DevOps']
 
 function DubaiClock() {
   const [t, setT] = useState('')
@@ -37,7 +36,7 @@ export default function Footer({ name, email, whatsapp, linkedin, links }: Props
                 <span className="block text-xs text-slate-400">Full stack & AI engineer</span>
               </span>
             </a>
-            <p className="mt-5 text-slate-400 leading-relaxed max-w-sm">Stores, apps and AI automations for growing brands, built end to end by one senior engineer.</p>
+            <p className="mt-5 text-slate-400 leading-relaxed max-w-sm">Senior full stack and AI engineer building web, e-commerce and AI products.</p>
 
             <div className="mt-6 flex items-center gap-2">
               {social.map((s) => (
@@ -55,27 +54,18 @@ export default function Footer({ name, email, whatsapp, linkedin, links }: Props
             </div>
 
             <a href="#contact" className="group mt-7 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:underline">
-              Start a project <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+              Get in touch <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
             </a>
           </div>
 
           {/* columns */}
-          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-[1fr_1fr_1.5fr] gap-8 text-sm">
-            <div>
-              <h3 className="font-semibold text-white mb-4">Services</h3>
-              <ul className="space-y-2.5 text-[#8b949e]">
-                {services.map((x) => (
-                  <li key={x}><a href="#services" className="hover:text-white transition-colors">{x}</a></li>
-                ))}
-              </ul>
-            </div>
+          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-[1fr_1.5fr] gap-8 text-sm">
             <div>
               <h3 className="font-semibold text-white mb-4">Explore</h3>
               <ul className="space-y-2.5 text-[#8b949e]">
                 {links.map(([l, h]) => (
                   <li key={h}><a href={h} className="hover:text-white transition-colors">{l}</a></li>
                 ))}
-                <li><a href="#faq" className="hover:text-white transition-colors">FAQ</a></li>
               </ul>
             </div>
             <div className="col-span-2 sm:col-span-1">

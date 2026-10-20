@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useSpring } from 'framer-motion'
 import Lenis from 'lenis'
-import { ArrowDown, ArrowRight, Check, ExternalLink, Mail, MapPin } from 'lucide-react'
+import { ArrowDown, Check, ExternalLink, Mail, MapPin } from 'lucide-react'
 import { pillars, profile, regions, stats } from './data'
 import Header from './components/Header'
 import { PixelBg } from './components/PixelBg'
@@ -15,12 +15,7 @@ const Scene = lazy(loadScene)
 const Projects = lazy(() => import('./components/Projects'))
 const Footer = lazy(() => import('./components/Footer'))
 const TechMarquee = lazy(() => import('./components/TechMarquee'))
-const BrandsStrip = lazy(() => import('./components/Trust').then((m) => ({ default: m.BrandsStrip })))
 const Portrait = lazy(() => import('./components/Trust').then((m) => ({ default: m.Portrait })))
-const Services = lazy(() => import('./components/Services').then((m) => ({ default: m.Services })))
-const Process = lazy(() => import('./components/Services').then((m) => ({ default: m.Process })))
-const Engagement = lazy(() => import('./components/Services').then((m) => ({ default: m.Engagement })))
-const FAQ = lazy(() => import('./components/Services').then((m) => ({ default: m.FAQ })))
 const ContactForm = lazy(() => import('./components/ContactForm'))
 const WhatsAppWidget = lazy(() => import('./components/WhatsAppWidget'))
 
@@ -28,13 +23,18 @@ const WhatsAppWidget = lazy(() => import('./components/WhatsAppWidget'))
 function useAfterPaint(delay = 0) {
   const [ready, setReady] = useState(false)
   useEffect(() => {
-    let t = 0
+    let t1 = 0
+    let t2 = 0
+    const fire = () => setReady(true)
+    // normally one frame after first paint; the timer also covers background tabs, where animation frames are paused
     const id = requestAnimationFrame(() => {
-      t = window.setTimeout(() => setReady(true), delay)
+      t1 = window.setTimeout(fire, delay)
     })
+    t2 = window.setTimeout(fire, delay + 400)
     return () => {
       cancelAnimationFrame(id)
-      clearTimeout(t)
+      clearTimeout(t1)
+      clearTimeout(t2)
     }
   }, [delay])
   return ready
@@ -79,10 +79,10 @@ const Later = ({ h = 600, children }: { h?: number; children: React.ReactNode })
 )
 
 const links = [
-  ['Services', '#services'],
   ['Work', '#projects'],
-  ['Process', '#process'],
   ['About', '#about'],
+  ['Skills', '#skills'],
+  ['Experience', '#experience'],
   ['Contact', '#contact'],
 ]
 
@@ -244,7 +244,7 @@ export default function App() {
 
       <Header links={links} active={active} whatsapp={profile.whatsapp} />
 
-      <a href="#services" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black">Skip to content</a>
+      <a href="#projects" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black">Skip to content</a>
       {ready && (
         <Suspense fallback={null}>
           <WhatsAppWidget />
@@ -257,7 +257,7 @@ export default function App() {
           <GlobeDragZone />
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6 inline-flex w-fit items-center gap-2 glass rounded-full px-4 py-1.5 text-xs text-slate-300">
             <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" /><span className="relative inline-flex h-2 w-2 rounded-full bg-accent" /></span>
-            Taking on new client projects
+            Open to new opportunities
           </motion.div>
           <motion.h1
             initial={{ y: 24 }}
@@ -265,36 +265,28 @@ export default function App() {
             transition={{ duration: 0.6 }}
             className="font-display font-bold text-4xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight max-w-3xl"
           >
-            Stores, apps & AI tools that <span className="grad-text">grow your business.</span>
+            Full stack engineer building <span className="grad-text">web, <span className="whitespace-nowrap">e-commerce</span> & AI products.</span>
           </motion.h1>
           <p className="mt-6 max-w-xl text-lg text-slate-300 leading-relaxed">
-            I am Abdul Basit, a senior full stack and AI engineer. I help e-commerce brands and startups launch high-converting Shopify and WordPress stores, custom plugins, web apps, AI automations and reliable cloud infrastructure.
+            I am Abdul Basit Sheikh, a senior full stack and AI engineer with 9+ years of experience across Shopify, WordPress, Laravel, React and cloud infrastructure. Here is a selection of the work I have shipped.
           </p>
           <motion.div initial={{ y: 16 }} animate={{ y: 0 }} transition={{ duration: 0.5 }} className="mt-9 flex flex-wrap gap-3">
-            <a href="#contact" className="btn-primary">Book a free call</a>
-            <a href="#projects" className="btn-secondary">See live work</a>
+            <a href="#projects" className="btn-primary">View my work</a>
+            <a href="#contact" className="btn-secondary">Get in touch</a>
           </motion.div>
           <motion.ul initial={{ y: 12 }} animate={{ y: 0 }} transition={{ duration: 0.5 }} className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
             {['9+ years experience', '14 live projects', 'Clients in the US & UAE'].map((t) => (
               <li key={t} className="inline-flex items-center gap-2"><Check size={14} className="text-accent" />{t}</li>
             ))}
           </motion.ul>
-          <a href="#services" aria-label="Scroll to services" className="mt-16 text-slate-400 animate-bounce w-fit"><ArrowDown /></a>
+          <a href="#projects" aria-label="Scroll to my work" className="mt-16 text-slate-400 animate-bounce w-fit"><ArrowDown /></a>
         </section>
 
         {ready && (
           <Suspense fallback={<div style={{ minHeight: 1200 }} aria-hidden />}>
           <TechMarquee />
 
-          <BrandsStrip />
-
-          <Services />
-
           <Projects />
-
-          <Process />
-
-          <Engagement />
 
           {/* ABOUT: GitLab-style numbered pillars + stats */}
           <section id="about" className="theme-light px-5 sm:px-10 py-28 max-w-7xl mx-auto">
@@ -302,11 +294,11 @@ export default function App() {
             <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-start mb-14">
               <div className="lg:col-span-4 order-2 lg:order-1 max-w-sm lg:max-w-none"><Portrait /></div>
               <div className="lg:col-span-8 order-1 lg:order-2">
-                <p className="eyebrow mb-3">Why work with me</p>
-                <h2 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight max-w-3xl mb-6">One senior engineer, <span className="text-[#8b949e]">end to end.</span></h2>
+                <p className="eyebrow mb-3">About me</p>
+                <h2 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight max-w-3xl mb-6">Engineer, team lead, <span className="text-[#8b949e]">problem solver.</span></h2>
                 <p className="text-lg text-slate-400 leading-relaxed mb-6">{profile.summary}</p>
                 <p className="text-slate-400 leading-relaxed">
-                  I work directly with founders and marketing teams, so you talk to the person who actually builds your project. No account managers, no hand-offs, just clear communication and steady progress.
+                  Beyond day-to-day delivery I enjoy leading teams, tuning performance and exploring AI-assisted workflows that make software faster to build and easier to maintain.
                 </p>
               </div>
             </div>
@@ -329,30 +321,19 @@ export default function App() {
             </dl>
           </section>
 
-          {/* CTA BAND */}
-          <section className="px-5 sm:px-10 py-24 max-w-7xl mx-auto">
-            <p className="eyebrow mb-4">Start building faster today</p>
-            <h2 className="font-display text-4xl sm:text-6xl font-semibold tracking-tight max-w-3xl mb-10">Ready to grow your <span className="text-[#8b949e]">business?</span></h2>
-            <div className="grid gap-3 md:grid-cols-2">
-              <a href="#contact" className="gradient-bar">Book a free call <ArrowRight size={20} /></a>
-              <a href={`https://wa.me/${profile.whatsapp}`} target="_blank" rel="noopener noreferrer" className="gradient-bar alt">Chat on WhatsApp <ArrowRight size={20} /></a>
-            </div>
-          </section>
-
           <Later h={700}><Skills /></Later>
 
           <Later h={900}><Experience /></Later>
 
           <Later h={500}><Credentials /></Later>
 
-          <FAQ />
-
           {/* CONTACT */}
-          <section id="contact" className="px-5 sm:px-10 py-28 max-w-7xl mx-auto grid lg:grid-cols-5 gap-12 items-start">
+          <section id="contact" className="theme-light px-5 sm:px-10 py-28 max-w-7xl mx-auto grid lg:grid-cols-5 gap-12 items-start">
+            <PixelBg />
             <div className="lg:col-span-2">
-              <p className="eyebrow mb-3">Start a project</p>
-              <h2 className="font-display text-5xl sm:text-6xl font-semibold tracking-tight mb-6 leading-tight">Let's talk about <span className="text-[#8b949e]">your project</span></h2>
-              <p className="text-slate-400 mb-8">Tell me what you need and I will get back to you with next steps and a quote. Prefer chat? Message me on WhatsApp.</p>
+              <p className="eyebrow mb-3">Contact</p>
+              <h2 className="font-display text-5xl sm:text-6xl font-semibold tracking-tight mb-6 leading-tight">Let's <span className="text-[#8b949e]">connect</span></h2>
+              <p className="text-slate-400 mb-8">Open to new opportunities, collaborations and conversations about interesting projects. Send me a message and I will reply by email, or reach me on WhatsApp.</p>
               <div className="grid gap-3 text-sm">
                 <a href={`mailto:${profile.email}`} className="inline-flex items-center gap-3 text-slate-300 hover:text-accent transition-colors"><Mail size={16} /> {profile.email}</a>
                 <a href={`https://wa.me/${profile.whatsapp}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 text-slate-300 hover:text-[#25d366] transition-colors"><WhatsAppIcon size={16} /> Chat on WhatsApp (Dubai)</a>

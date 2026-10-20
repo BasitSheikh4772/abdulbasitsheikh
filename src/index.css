@@ -74,12 +74,34 @@ main > section.theme-light::after {
   position: absolute; top: 0; left: 50%; width: 100vw; height: 100%; transform: translateX(-50%); z-index: -1; pointer-events: none;
   /* tech blueprint: glowing dot grid + faint lines + soft blue wash, fading out from the top-right corner */
   background:
-    radial-gradient(circle, rgba(88, 166, 255, .55) 1px, transparent 1.6px) 0 0 / 36px 36px,
+    radial-gradient(circle, rgba(88, 166, 255, .75) 1px, transparent 1.6px) 0 0 / 36px 36px,
     linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px) 0 0 / 72px 72px,
     linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px) 0 0 / 72px 72px,
     radial-gradient(640px circle at 88% 0%, rgba(88, 166, 255, .12), transparent 70%);
   -webkit-mask-image: radial-gradient(ellipse 70% 90% at 90% 0%, #000 0%, transparent 72%);
   mask-image: radial-gradient(ellipse 70% 90% at 90% 0%, #000 0%, transparent 72%);
+}
+
+.pixel-fade.left {
+  -webkit-mask-image: radial-gradient(ellipse 70% 90% at 10% 0%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(ellipse 70% 90% at 10% 0%, #000 0%, transparent 72%);
+  background:
+    radial-gradient(circle, rgba(163, 113, 247, .7) 1px, transparent 1.6px) 0 0 / 36px 36px,
+    linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px) 0 0 / 72px 72px,
+    linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px) 0 0 / 72px 72px,
+    radial-gradient(640px circle at 12% 0%, rgba(163, 113, 247, .12), transparent 70%);
+}
+/* soft corner glows for the sections that do not use the dot grid */
+.section-glow {
+  position: absolute; top: 0; left: 50%; width: 100vw; height: 100%; transform: translateX(-50%); z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(720px circle at 8% 0%, rgba(88, 166, 255, .2), transparent 65%),
+    radial-gradient(640px circle at 96% 100%, rgba(163, 113, 247, .16), transparent 65%);
+}
+.section-glow.alt {
+  background:
+    radial-gradient(720px circle at 92% 0%, rgba(163, 113, 247, .2), transparent 65%),
+    radial-gradient(640px circle at 4% 100%, rgba(88, 166, 255, .16), transparent 65%);
 }
 
 /* GitLab-style gradient call-to-action bar */

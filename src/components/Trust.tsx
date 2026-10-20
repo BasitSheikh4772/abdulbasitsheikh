@@ -4,28 +4,6 @@ import { profile } from '../data'
 const photos = import.meta.glob('/src/assets/profile.{jpg,jpeg,png,webp}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 const photo = Object.values(photos)[0]
 
-const BRANDS = ['Obvi', 'Yaynuts', 'Sweetums', 'The Only Bean', 'Chocbox LA', 'Javvy Coffee', 'Grüns', 'Menerals', 'Noor Food Manufacturing', 'Idarul Ehsan', 'ScaleHouse']
-
-/** Factual social proof: brands whose sites are shown in the Work section. */
-export function BrandsStrip() {
-  return (
-    <section aria-label="Brands I have built for" className="border-b border-line">
-      <div className="max-w-7xl mx-auto px-5 sm:px-10 py-12">
-        <p className="eyebrow mb-6">Brands I've built for</p>
-        <ul className="flex flex-wrap items-center gap-x-10 gap-y-5">
-          {BRANDS.map((b) => (
-            <li key={b}>
-              <a href="#projects" className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-[#8b949e] hover:text-white transition-colors">
-                {b}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )
-}
-
 /** Portrait card: shows /src/assets/profile.(jpg|png|webp) when present, otherwise a monogram. */
 export function Portrait() {
   return (

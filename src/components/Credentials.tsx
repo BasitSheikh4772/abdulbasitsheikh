@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Award, GraduationCap } from 'lucide-react'
 import { certifications, education } from '../data'
+import { GlowBg } from './PixelBg'
 
 const ISSUER: Record<string, { color: string; short: string }> = {
   AWS: { color: '#ff9900', short: 'AWS' },
@@ -31,6 +32,7 @@ function Card({ color, children, i }: { color: string; children: React.ReactNode
 export default function Credentials() {
   return (
     <section id="credentials" className="px-5 sm:px-10 py-28 max-w-7xl mx-auto">
+      <GlowBg alt />
       <div className="grid lg:grid-cols-12 gap-8 items-end mb-12">
         <div className="lg:col-span-8">
           <p className="eyebrow mb-3">Education & credentials</p>

@@ -1,7 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { CheckCircle2, Loader2, Send, TriangleAlert } from 'lucide-react'
-import { profile, services } from '../data'
-import { SERVICE_EVENT } from './Services'
+import { profile } from '../data'
 
 // Delivered straight to the inbox via FormSubmit (no backend needed).
 // The very first submission triggers a one-time activation email to this address.
@@ -14,14 +13,6 @@ const field =
 
 export default function ContactForm() {
   const [state, setState] = useState<State>('idle')
-  const [service, setService] = useState('')
-
-  // "Get a quote" on a service card pre-selects it here
-  useEffect(() => {
-    const on = (e: Event) => setService((e as CustomEvent<string>).detail)
-    window.addEventListener(SERVICE_EVENT, on)
-    return () => window.removeEventListener(SERVICE_EVENT, on)
-  }, [])
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -69,19 +60,8 @@ export default function ContactForm() {
         </label>
       </div>
       <label className="grid gap-1.5 text-xs text-slate-400">
-        What do you need?
-        <select name="service" value={service} onChange={(e) => setService(e.target.value)} className={field}>
-          <option value="">Select a service (optional)</option>
-          {services.map((x) => (
-            <option key={x.id} value={x.title}>{x.title}</option>
-          ))}
-          <option value="Something else">Something else</option>
-          {service && !services.some((x) => x.title === service) && service !== 'Something else' && <option value={service}>{service}</option>}
-        </select>
-      </label>
-      <label className="grid gap-1.5 text-xs text-slate-400">
         Message
-        <textarea required name="message" rows={5} placeholder="Tell me about your project, goals and timeline…" className={`${field} resize-y`} />
+        <textarea required name="message" rows={5} placeholder="How can I help, or what would you like to talk about?" className={`${field} resize-y`} />
       </label>
 
       <button

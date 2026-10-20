@@ -164,6 +164,31 @@ function Marker({ pos, color }: { pos: THREE.Vector3; color: string }) {
   )
 }
 
+const oceanShader = {
+  vertex: /* glsl */ `
+    varying vec3 vN; varying vec3 vV;
+    void main(){
+      vN = normalize(normalMatrix * normal);
+      vec4 mv = modelViewMatrix * vec4(position, 1.0);
+      vV = normalize(-mv.xyz);
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragment: /* glsl */ `
+    varying vec3 vN; varying vec3 vV;
+    void main(){
+      vec3 n = normalize(vN);
+      vec3 L = normalize(vec3(-0.55, 0.65, 0.75));
+      float lit = clamp(dot(n, L) * 0.5 + 0.5, 0.0, 1.0);
+      vec3 shadow = vec3(0.03, 0.07, 0.22);    // #081238
+      vec3 light  = vec3(0.13, 0.33, 0.78);    // #2154c7
+      vec3 col = mix(shadow, light, pow(lit, 1.35));
+      // gentle brightening toward the limb on the lit side only (no outer halo)
+      float rim = pow(1.0 - max(dot(n, normalize(vV)), 0.0), 3.0) * lit * 0.35;
+      col += vec3(0.35, 0.55, 1.0) * rim;
+      gl_FragColor = vec4(col, 1.0);
+    }`,
+}
+
 const ACTIVE = '#3fb950'
 const ACTIVE_HOT = '#aff5b4'
 
@@ -237,17 +262,17 @@ export default function Globe() {
 
   return (
     <group ref={group}>
-      {/* dark body, lit softly from the upper left */}
+      {/* ocean: deep blue in shadow, vivid blue where the light from the upper left hits it */}
       <mesh ref={body}>
         <sphereGeometry args={[R * 0.995, 64, 64]} />
-        <meshLambertMaterial color="#0f1a33" />
+        <shaderMaterial vertexShader={oceanShader.vertex} fragmentShader={oceanShader.fragment} />
       </mesh>
       <group ref={spin} rotation={[0, BASE_ROT, 0]}>
         <points>
           <bufferGeometry>
             <bufferAttribute attach="attributes-position" args={[world.base, 3]} />
           </bufferGeometry>
-          <pointsMaterial size={0.088} color="#a9bddf" map={tex} alphaMap={tex} transparent alphaTest={0.4} sizeAttenuation depthWrite={false} />
+          <pointsMaterial size={0.1} color="#e4efff" map={tex} alphaMap={tex} transparent alphaTest={0.4} sizeAttenuation depthWrite={false} />
         </points>
 
         {/* active countries */}

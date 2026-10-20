@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { experience, experienceSpans } from '../data'
+import { PixelBg } from './PixelBg'
 
 const COUNTRY = { PK: '#58a6ff', AE: '#a371f7', US: '#3fb950' } as const
 type Code = keyof typeof COUNTRY
@@ -25,6 +26,14 @@ const shortRole = (role: string) =>
 
 const FIRST = 2017
 
+// real company logos: drop files into src/assets/companies/ (see the README there)
+const logoFiles = import.meta.glob('/src/assets/companies/*.{png,jpg,jpeg,webp,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const slug = (org: string) => shortOrg(org).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const logoFor = (org: string) => {
+  const key = slug(org)
+  return Object.entries(logoFiles).find(([path]) => path.split('/').pop()!.replace(/\.[^.]+$/, '') === key)?.[1]
+}
+
 export default function Experience() {
   const [hover, setHover] = useState<number | null>(null)
   const [filter, setFilter] = useState<Code | 'ALL'>('ALL')
@@ -40,7 +49,8 @@ export default function Experience() {
   const dim = (i: number, c: Code) => !visible(c) || (hover !== null && hover !== i)
 
   return (
-    <section id="experience" className="px-5 sm:px-10 py-28 max-w-7xl mx-auto">
+    <section id="experience" className="theme-light px-5 sm:px-10 py-28 max-w-7xl mx-auto">
+      <PixelBg side="left" />
       <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-end mb-12">
         <div className="lg:col-span-7">
           <p className="eyebrow mb-3">Experience</p>
@@ -176,12 +186,21 @@ export default function Experience() {
 
               <div className={`flex ${current ? 'flex-col sm:flex-row sm:items-center' : 'flex-col'} gap-5`}>
                 <div className="flex items-start justify-between gap-3">
-                  <span
-                    className={`grid place-items-center rounded-xl shrink-0 font-display font-bold ${current ? 'w-16 h-16 text-xl' : 'w-12 h-12 text-sm'}`}
-                    style={{ background: `${c}22`, color: c, border: `1px solid ${c}55` }}
-                  >
-                    {initials(r.org)}
-                  </span>
+                  {logoFor(r.org) ? (
+                    <span
+                      className={`grid place-items-center rounded-xl shrink-0 bg-white overflow-hidden ${current ? 'w-16 h-16 p-2' : 'w-12 h-12 p-1.5'}`}
+                      style={{ border: `1px solid ${c}55` }}
+                    >
+                      <img src={logoFor(r.org)} alt={`${shortOrg(r.org)} logo`} className="max-w-full max-h-full object-contain" loading="lazy" />
+                    </span>
+                  ) : (
+                    <span
+                      className={`grid place-items-center rounded-xl shrink-0 font-display font-bold ${current ? 'w-16 h-16 text-xl' : 'w-12 h-12 text-sm'}`}
+                      style={{ background: `${c}22`, color: c, border: `1px solid ${c}55` }}
+                    >
+                      {initials(r.org)}
+                    </span>
+                  )}
                   {!current && (
                     <span className="inline-flex items-center gap-1.5 text-xs text-slate-300 border border-line rounded-full pl-1.5 pr-2.5 py-1 bg-black/20">
                       <b className="text-[.6rem] font-bold tracking-wider px-1.5 py-0.5 rounded" style={{ background: `${c}26`, color: c }}>{r.code}</b>

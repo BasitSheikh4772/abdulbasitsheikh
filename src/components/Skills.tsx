@@ -1,40 +1,105 @@
 import { motion } from 'framer-motion'
-import { Bot, CloudCog, Database, Layout, Server, ShoppingBag, Smartphone, type LucideIcon } from 'lucide-react'
-import {
-  siAndroid, siAnthropic, siBigcommerce, siBootstrap, siCloudflare, siCodeigniter, siCss, siDart, siDigitalocean, siDjango,
-  siDocker, siDotnet, siElementor, siFlask, siFlutter, siGit, siGooglecloud, siGreensock, siHtml5, siJavascript, siLangchain,
-  siLaravel, siMongodb, siMoodle, siMysql, siNextdotjs, siNginx, siPaypal, siPhp, siPostgresql, siPython, siReact, siRedis,
-  siSass, siShopify, siStripe, siSymfony, siTailwindcss, siTypescript, siWordpress,
-} from 'simple-icons'
+import { Bot, Database, LibraryBig, MessageSquareText, Plug, Sparkles, type LucideIcon } from 'lucide-react'
 import { skills } from '../data'
+import AIMascot from './AIMascot'
+import { GlowBg } from './PixelBg'
+import { skillIcons } from './skillIcons'
 
-type Icon = { title: string; path: string }
-
-/** keyword (lower-case, matched as a substring of the skill label) -> brand icon. First match wins. */
-const ICONS: [string, Icon][] = [
-  ['shopify', siShopify], ['elementor', siElementor], ['gutenberg', siWordpress], ['wordpress', siWordpress],
-  ['bigcommerce', siBigcommerce], ['moodle', siMoodle], ['react native', siReact], ['react', siReact], ['next.js', siNextdotjs],
-  ['typescript', siTypescript], ['javascript', siJavascript], ['tailwind', siTailwindcss], ['gsap', siGreensock], ['sass', siSass],
-  ['bootstrap', siBootstrap], ['html5', siHtml5], ['css3', siCss], ['laravel', siLaravel], ['php', siPhp], ['flask', siFlask], ['django', siDjango],
-  ['python', siPython], ['symfony', siSymfony], ['codeigniter', siCodeigniter], ['.net', siDotnet], ['langchain', siLangchain],
-  ['claude', siAnthropic], ['flutter', siFlutter], ['dart', siDart], ['android', siAndroid], ['gcp', siGooglecloud],
-  ['digitalocean', siDigitalocean], ['cloudflare', siCloudflare], ['docker', siDocker], ['nginx', siNginx], ['git', siGit],
-  ['mysql', siMysql], ['postgres', siPostgresql], ['mongo', siMongodb], ['redis', siRedis], ['stripe', siStripe], ['paypal', siPaypal],
+/** keyword (lower-case, matched inside the skill label) -> logo keys. First match wins; up to 3 logos are shown. */
+const LOGOS: [string, string[]][] = [
+  ['shopify', ['shopify']],
+  ['woocommerce', ['wordpress', 'woocommerce']],
+  ['elementor', ['elementor']],
+  ['gutenberg', ['wordpress', 'react']],
+  ['bigcommerce', ['bigcommerce']],
+  ['magento', ['magento']],
+  ['moodle', ['moodle']],
+  ['react.js', ['react']],
+  ['next.js', ['nextjs']],
+  ['javascript', ['javascript', 'typescript']],
+  ['tailwind', ['tailwind']],
+  ['gsap', ['gsap']],
+  ['sass', ['sass']],
+  ['bootstrap', ['bootstrap']],
+  ['html5', ['html5', 'css3']],
+  ['laravel', ['laravel']],
+  ['core php', ['php']],
+  ['python', ['python', 'flask', 'django']],
+  ['c# /', ['csharp', 'dotnet']],
+  ['symfony', ['symfony']],
+  ['codeigniter', ['codeigniter']],
+  ['langchain', ['langchain']],
+  ['claude', ['claude', 'openai']],
+  ['react native', ['react']],
+  ['flutter', ['flutter', 'dart']],
+  ['android', ['android']],
+  ['aws ses', ['aws']],
+  ['aws', ['aws']],
+  ['gcp', ['gcp']],
+  ['azure', ['azure']],
+  ['digitalocean', ['digitalocean']],
+  ['cloudflare', ['cloudflare']],
+  ['docker', ['docker']],
+  ['nginx', ['nginx']],
+  ['lamp', ['linux', 'nginx']],
+  ['git', ['git', 'github', 'gitlab']],
+  ['mysql', ['mysql', 'mariadb']],
+  ['postgres', ['postgresql']],
+  ['mongo', ['mongodb']],
+  ['redis', ['redis']],
+  ['stripe', ['stripe', 'paypal']],
+  ['twilio', ['twilio']],
+  ['jwt', ['jwt']],
 ]
-const iconFor = (label: string) => ICONS.find(([k]) => label.toLowerCase().includes(k))?.[1]
+
+/** skills that have no brand logo get a clear symbolic icon instead */
+const SYMBOLS: [string, LucideIcon][] = [
+  ['llm', Bot],
+  ['rag', LibraryBig],
+  ['chatbots', MessageSquareText],
+  ['prompt', Sparkles],
+  ['rest api', Plug],
+]
+
+const logosFor = (label: string) => LOGOS.find(([k]) => label.toLowerCase().includes(k))?.[1]
+const symbolFor = (label: string): LucideIcon => SYMBOLS.find(([k]) => label.toLowerCase().includes(k))?.[1] ?? Database
+
+/** three overlapping logos that represent a whole skill area */
+const GROUP_LOGOS: Record<string, string[]> = {
+  'E-commerce & CMS': ['shopify', 'wordpress', 'bigcommerce'],
+  'AI & Automation': ['langchain', 'claude', 'openai'],
+  Frontend: ['react', 'nextjs', 'tailwind'],
+  Backend: ['laravel', 'php', 'python'],
+  Mobile: ['flutter', 'react', 'android'],
+  'DevOps & Cloud': ['aws', 'docker', 'cloudflare'],
+  'Data & Integrations': ['postgresql', 'mongodb', 'redis'],
+}
+
+function Logo({ name, size }: { name: string; size: number }) {
+  const ic = skillIcons[name]
+  if (!ic) return null
+  return (
+    <svg viewBox={`0 0 ${ic.w} ${ic.h}`} width={size} height={size} role="img" aria-label={name} dangerouslySetInnerHTML={{ __html: ic.body }} />
+  )
+}
+
+/** light rounded tile so dark logos (GitHub, Next.js, Laravel...) stay visible on the dark cards */
+const Tile = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <span className={`grid place-items-center rounded-md bg-[#eef2f7] shrink-0 ${className}`}>{children}</span>
+)
 
 /** badge text taken from the CV wording, shown only where the CV states a level */
 const LEVEL: Record<string, string> = { 'Laravel (Expert)': 'Expert' }
 
-type Meta = { icon: LucideIcon; color: string; span: string; blurb: string }
+type Meta = { color: string; span: string; blurb: string }
 const META: Record<string, Meta> = {
-  'E-commerce & CMS': { icon: ShoppingBag, color: '#3fb950', span: 'lg:col-span-2', blurb: 'Stores and content platforms that convert.' },
-  'AI & Automation': { icon: Bot, color: '#a371f7', span: '', blurb: 'LLM apps, agents and workflow automation.' },
-  Frontend: { icon: Layout, color: '#58a6ff', span: '', blurb: 'Fast, polished interfaces.' },
-  Backend: { icon: Server, color: '#f778ba', span: '', blurb: 'Solid APIs and application logic.' },
-  Mobile: { icon: Smartphone, color: '#ffa657', span: '', blurb: 'Cross-platform iOS and Android.' },
-  'DevOps & Cloud': { icon: CloudCog, color: '#39c5cf', span: 'lg:col-span-2', blurb: 'Hosting, security and delivery pipelines.' },
-  'Data & Integrations': { icon: Database, color: '#e3b341', span: '', blurb: 'Databases, payments and third-party APIs.' },
+  'E-commerce & CMS': { color: '#3fb950', span: 'lg:col-span-2', blurb: 'Stores and content platforms that convert.' },
+  'AI & Automation': { color: '#a371f7', span: '', blurb: 'LLM apps, agents and workflow automation.' },
+  Frontend: { color: '#58a6ff', span: '', blurb: 'Fast, polished interfaces.' },
+  Backend: { color: '#f778ba', span: '', blurb: 'Solid APIs and application logic.' },
+  Mobile: { color: '#ffa657', span: '', blurb: 'Cross-platform iOS and Android.' },
+  'DevOps & Cloud': { color: '#39c5cf', span: 'lg:col-span-2', blurb: 'Hosting, security and delivery pipelines.' },
+  'Data & Integrations': { color: '#e3b341', span: '', blurb: 'Databases, payments and third-party APIs.' },
 }
 
 // bento order: wide cards share a row with a single card
@@ -44,19 +109,22 @@ export default function Skills() {
   const groups = ORDER.map((g) => skills.find((s) => s.group === g)).filter((g): g is (typeof skills)[number] => Boolean(g))
   return (
     <section id="skills" className="px-5 sm:px-10 py-28 max-w-7xl mx-auto">
+      <GlowBg />
       <div className="grid lg:grid-cols-12 gap-8 items-end mb-12">
         <div className="lg:col-span-8">
           <p className="eyebrow mb-3">Toolbox</p>
           <h2 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight mb-5">Skills & <span className="text-[#8b949e]">technologies</span></h2>
           <p className="text-slate-400 leading-relaxed max-w-xl">The stack I use to design, build, ship and scale products, from storefronts to AI agents and cloud infrastructure.</p>
         </div>
-        <p className="lg:col-span-4 lg:text-right font-mono text-sm text-slate-400">{skills.reduce((n, g) => n + g.items.length, 0)} skills · {skills.length} areas</p>
+        <div className="lg:col-span-4 flex flex-col items-center lg:items-end gap-3">
+          <AIMascot className="w-40 sm:w-48" />
+          <p className="font-mono text-sm text-slate-400">{skills.reduce((n, g) => n + g.items.length, 0)} skills · {skills.length} areas</p>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {groups.map((g, gi) => {
           const m = META[g.group]
-          const Icon = m.icon
           return (
             <motion.article
               key={g.group}
@@ -71,8 +139,17 @@ export default function Skills() {
               <span className="pointer-events-none absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: `inset 0 0 0 1px ${m.color}77, 0 18px 50px -20px ${m.color}88` }} />
 
               <div className="flex items-start gap-4 mb-6">
-                <span className="grid place-items-center w-12 h-12 rounded-xl shrink-0" style={{ background: `${m.color}22`, color: m.color, border: `1px solid ${m.color}55` }}>
-                  <Icon size={22} />
+                {/* overlapping brand logos for this skill area */}
+                <span className="flex shrink-0 pl-1" aria-hidden>
+                  {GROUP_LOGOS[g.group].map((n, i) => (
+                    <span
+                      key={n}
+                      className="grid place-items-center w-11 h-11 rounded-full bg-[#eef2f7] -ml-2.5 first:ml-0 ring-[3px] ring-[#161b22]"
+                      style={{ zIndex: 3 - i }}
+                    >
+                      <Logo name={n} size={24} />
+                    </span>
+                  ))}
                 </span>
                 <div className="min-w-0 grow">
                   <h3 className="font-display text-xl font-semibold leading-tight">{g.group}</h3>
@@ -83,17 +160,26 @@ export default function Skills() {
 
               <ul className="flex flex-wrap gap-2">
                 {g.items.map((item) => {
-                  const ic = iconFor(item)
+                  const keys = logosFor(item)?.filter((k) => skillIcons[k]).slice(0, 3)
+                  const Symbol = symbolFor(item)
                   return (
                     <li
                       key={item}
-                      className="inline-flex items-center gap-2 rounded-md border border-line bg-black/25 px-3 py-1.5 text-[.8rem] text-slate-200 transition-colors hover:border-[var(--c)] hover:text-white"
+                      className="inline-flex items-center gap-2.5 rounded-md border border-line bg-black/25 pl-1.5 pr-3 py-1.5 text-[.8rem] text-slate-200 transition-colors hover:border-[var(--c)] hover:text-white"
                       style={{ ['--c' as string]: m.color }}
                     >
-                      {ic && (
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden style={{ color: m.color }}>
-                          <path d={ic.path} />
-                        </svg>
+                      {keys && keys.length > 0 ? (
+                        <span className="flex gap-1">
+                          {keys.map((k) => (
+                            <Tile key={k} className="w-6 h-6">
+                              <Logo name={k} size={16} />
+                            </Tile>
+                          ))}
+                        </span>
+                      ) : (
+                        <span className="grid place-items-center w-6 h-6 rounded-md shrink-0" style={{ background: `${m.color}26`, color: m.color }}>
+                          <Symbol size={14} />
+                        </span>
                       )}
                       {item}
                       {LEVEL[item] && (

@@ -98,86 +98,11 @@ export const regions: Region[] = [
   },
 ]
 
-export const services = [
-  {
-    id: 'shopify', icon: 'shopping', title: 'Shopify Stores & Custom Features',
-    blurb: 'Conversion-focused themes, landing pages and custom features such as bundle builders, built to turn traffic into orders.',
-    points: ['Custom theme development & redesigns', 'Bundle builders, upsells & subscriptions', 'Speed optimisation & app integrations'],
-    price: '$300', unit: 'per project', note: 'Custom features from $100',
-  },
-  {
-    id: 'wordpress', icon: 'blocks', title: 'WordPress & WooCommerce',
-    blurb: 'Fast, secure and easy-to-manage websites and online stores, built on clean custom code instead of bloated page builders.',
-    points: ['Custom themes, Elementor & Gutenberg', 'WooCommerce store customisation', 'Security, caching & speed tuning'],
-    price: '$250', unit: 'per project', note: 'Migrations & maintenance on request',
-  },
-  {
-    id: 'plugins', icon: 'key', title: 'Custom Plugins & Licensing Systems',
-    blurb: 'Purpose-built WordPress and WooCommerce plugins, plus your own licensing platform to sell and protect them.',
-    points: ['Custom plugin & Gutenberg block development', 'License server: keys, activation limits, updates', 'Stripe / PayPal and REST API integration'],
-    price: '$150', unit: 'per plugin', note: 'Full license systems from $500',
-  },
-  {
-    id: 'web', icon: 'code', title: 'Custom Web Apps & Portals',
-    blurb: 'Tailor-made platforms, dashboards and customer portals on Laravel, React, Next.js, .NET or Python.',
-    points: ['Business apps, dashboards & portals', 'REST APIs, authentication & payments', 'Scalable architecture and clean code'],
-    price: '$800', unit: 'per project', note: 'Scoped after a discovery call',
-  },
-  {
-    id: 'ai', icon: 'bot', title: 'AI Chatbots & Automation',
-    blurb: 'Practical AI that saves your team hours: assistants trained on your own content and workflows that run themselves.',
-    points: ['Custom chatbots & AI agents (LangChain)', 'RAG over your documents & knowledge base', 'LLM API integrations & automation'],
-    price: '$400', unit: 'per project', note: 'Ongoing tuning available',
-  },
-  {
-    id: 'mobile', icon: 'mobile', title: 'Mobile Apps',
-    blurb: 'Cross-platform iOS and Android apps with a clean interface and solid backend integration.',
-    points: ['React Native & Flutter development', 'API & backend integration', 'Android build and store deployment'],
-    price: '$1,000', unit: 'per project', note: 'Scoped after a discovery call',
-  },
-  {
-    id: 'devops', icon: 'cloud', title: 'Cloud, DevOps & Performance',
-    blurb: 'Reliable hosting, secure servers and a stack that stays fast and available as you grow.',
-    points: ['AWS, GCP, Azure, DigitalOcean & Cloudflare', 'Docker, NGINX, CI/CD & server hardening', 'Monitoring, backups & speed optimisation'],
-    price: '$200', unit: 'setup', note: 'Maintenance plans from $75 / month',
-  },
-  {
-    id: 'lms', icon: 'lms', title: 'Moodle LMS & E-learning',
-    blurb: 'Learning platforms tailored to your courses, branding and users, with custom plugins and integrations.',
-    points: ['Moodle theme & plugin development', 'Web services and API integration', 'Performance, security & maintenance'],
-    price: '$350', unit: 'per project', note: 'Scoped after a discovery call',
-  },
-  {
-    id: 'lead', icon: 'team', title: 'Technical Leadership',
-    blurb: 'A senior engineer to own delivery: architecture decisions, code review and leading your development team.',
-    points: ['Architecture & tech-stack decisions', 'Lead engineer / team lead on contract', 'Code reviews and delivery management'],
-    price: 'Custom', unit: 'monthly engagement', note: 'Agreed per scope',
-  },
-]
-
-export const process = [
-  { step: '01', title: 'Discover', text: 'A short call to understand your goals, audience and constraints, then a clear scope and plan.' },
-  { step: '02', title: 'Design & plan', text: 'Structure, user flows and technical approach agreed up front, so there are no surprises later.' },
-  { step: '03', title: 'Build', text: 'Clean, fast, tested code with regular progress updates and previews you can click through.' },
-  { step: '04', title: 'Launch & grow', text: 'Smooth go-live, performance checks and ongoing support as your store or product grows.' },
-]
-
-export const faqs = [
-  { q: 'What services do you offer?', a: 'Shopify and WordPress/WooCommerce development, custom plugins and licensing systems, custom web apps, AI chatbots and automation, mobile apps, Moodle LMS, and cloud/DevOps. If it is web or software, send it over and I will tell you honestly whether I am the right fit.' },
-  { q: 'How does pricing work?', a: 'Each service above shows a starting price. These are promotional prices for your first order when you contact me directly through the form, WhatsApp or email. The final cost depends on scope, integrations and timeline, and after a short discovery call you receive a clear written quote before any work begins.' },
-  { q: 'Can you build a WordPress plugin with its own license system?', a: 'Yes. I build custom WordPress and WooCommerce plugins together with the licensing platform around them: license key generation, domain activation limits, automatic update delivery and Stripe or PayPal purchase flows.' },
-  { q: 'Can you work on my existing store or website?', a: 'Yes. I can take over an existing site for redesigns, new features, speed and security improvements, and migrations, without starting from scratch.' },
-  { q: 'How do we get started?', a: 'Send a message through the form or WhatsApp with a short description of what you need. We then book a quick call to agree scope, timeline and cost.' },
-  { q: 'Do you offer support after launch?', a: 'Yes. I offer ongoing maintenance, fixes and new features after go-live, including cloud monitoring and updates, so your site stays fast and secure.' },
-]
 
 
 
-export const pillars = [
-  { n: '01', title: 'One accountable engineer', text: 'Planning, design-to-code, build and launch handled by one senior person, so nothing gets lost between handoffs.' },
-  { n: '02', title: 'Fast and well built', text: 'AI-assisted workflows and performance-first code mean quicker delivery without cutting corners on quality.' },
-  { n: '03', title: 'Transparent at every step', text: 'Clear scope, regular updates and live previews, so you always know where the project stands.' },
-]
+
+
 
 /** [start, end] as decimal years (e.g. 2025.5 = Jul 2025). end = null means "present". */
 export const experienceSpans: Record<string, [number, number | null]> = {
@@ -192,3 +117,9 @@ export const experienceSpans: Record<string, [number, number | null]> = {
   'Learning Pitch': [2018.25, 2020.75],
   'EDLAB Pakistan': [2017.0, 2018.58],
 }
+
+export const pillars = [
+  { n: '01', title: 'Ownership', text: 'I take responsibility for a project from the first idea to production, and I care about how it performs long after launch.' },
+  { n: '02', title: 'Quality and speed', text: 'Performance-first code and AI-assisted workflows help me deliver quickly without cutting corners.' },
+  { n: '03', title: 'Clear communication', text: 'Plain language, steady updates and no surprises, whether I am working solo or leading a team.' },
+]

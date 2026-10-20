@@ -74,7 +74,7 @@ export default function Header({ links, active, whatsapp }: Props) {
             href="#contact"
             className="group/cta relative inline-flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-semibold text-white bg-[#238636] border border-white/10 hover:bg-[#2ea043] transition-colors shadow-[0_0_24px_-6px_#3fb950]"
           >
-            Hire me
+            Contact me
             <ArrowRight size={15} className="transition-transform group-hover/cta:translate-x-0.5" />
           </a>
           <button
