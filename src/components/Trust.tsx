@@ -10,7 +10,7 @@ export function Portrait() {
     <aside className="rounded-xl border border-line overflow-hidden bg-[#161b22]" style={{ background: 'radial-gradient(420px circle at 0% 0%, rgba(137,87,229,.22), transparent 60%), radial-gradient(380px circle at 100% 100%, rgba(88,166,255,.16), transparent 60%), #161b22' }}>
       <div className="relative aspect-[4/5] grid place-items-center">
         {photo ? (
-          <img src={photo} alt={`Portrait of ${profile.name}`} className="absolute inset-0 w-full h-full object-cover" />
+          <img src={photo} alt={`Portrait of ${profile.name}`} className="absolute inset-0 w-full h-full object-cover object-[50%_20%]" />
         ) : (
           <span className="grid place-items-center w-36 h-36 rounded-3xl text-5xl font-bold text-white bg-gradient-to-br from-[#58a6ff] via-[#8957e5] to-[#f778ba] shadow-[0_0_60px_-10px_#8957e5]">AB</span>
         )}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { experience, experienceSpans } from '../data'
 import { PixelBg } from './PixelBg'
@@ -37,6 +37,17 @@ const logoFor = (org: string) => {
 export default function Experience() {
   const [hover, setHover] = useState<number | null>(null)
   const [filter, setFilter] = useState<Code | 'ALL'>('ALL')
+  const chart = useRef<HTMLDivElement>(null)
+  const [cw, setCw] = useState(720) // real pixel width of the bar area, so labels can tell if they fit
+
+  useEffect(() => {
+    const el = chart.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setCw(el.clientWidth))
+    ro.observe(el)
+    setCw(el.clientWidth)
+    return () => ro.disconnect()
+  }, [])
 
   const now = nowYear()
   const last = Math.ceil(now) + 0.2
@@ -112,7 +123,7 @@ export default function Experience() {
               ))}
             </ul>
 
-            <div className="relative">
+            <div className="relative" ref={chart}>
               {years.map((y) => (
                 <i key={y} className="absolute top-0 bottom-0 w-px bg-line/60" style={{ left: pct(y) }} />
               ))}
@@ -124,7 +135,12 @@ export default function Experience() {
                 const [a, b] = r.span
                 const end = b ?? now
                 const c = COUNTRY[r.code]
-                const wide = ((end - a) / span) * 720 > 90
+                const label = shortRole(r.role)
+                const textPx = label.length * 5.9 + 20
+                const barPx = ((end - a) / span) * cw
+                const inside = barPx >= textPx
+                // too narrow for its title: put the title beside the bar, on the right if there is room, otherwise on the left
+                const room = cw - ((end - FIRST) / span) * cw >= textPx + 10
                 return (
                   <div key={r.i} className="relative h-9">
                     <motion.button
@@ -148,8 +164,16 @@ export default function Experience() {
                         boxShadow: hover === r.i || b === null ? `0 0 16px ${c}` : undefined,
                       }}
                     >
-                      {wide && shortRole(r.role)}
+                      {inside && label}
                     </motion.button>
+                    {!inside && (
+                      <span
+                        className="absolute top-1.5 h-6 flex items-center text-[10px] font-semibold text-slate-200 whitespace-nowrap pointer-events-none transition-opacity"
+                        style={room ? { left: `calc(${pct(end)} + 6px)`, opacity: dim(r.i, r.code) ? 0.25 : 1 } : { right: `calc(100% - ${pct(a)} + 6px)`, opacity: dim(r.i, r.code) ? 0.25 : 1 }}
+                      >
+                        {label}
+                      </span>
+                    )}
                   </div>
                 )
               })}

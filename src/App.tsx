@@ -89,6 +89,7 @@ const links = [
 /** Invisible layer over the globe: drag to spin it, hover a lit-up country for details. */
 function GlobeDragZone() {
   const last = useRef<{ x: number; y: number; t: number } | null>(null)
+  const down = useRef<{ x: number; y: number } | null>(null)
   const [hover, setHover] = useState<number | null>(null)
   const [pos, setPos] = useState({ x: 0, y: 0 })
 
@@ -116,6 +117,7 @@ function GlobeDragZone() {
           e.currentTarget.setPointerCapture(e.pointerId)
           globeInput.dragging = true
           globeInput.vy = globeInput.vx = 0
+          down.current = { x: e.clientX, y: e.clientY }
           last.current = { x: e.clientX, y: e.clientY, t: performance.now() }
         }}
         onPointerMove={(e) => {
@@ -135,7 +137,16 @@ function GlobeDragZone() {
           globeInput.vx = dy / dt
           last.current = { x: e.clientX, y: e.clientY, t: now }
         }}
-        onPointerUp={end}
+        onPointerUp={(e) => {
+          // a click (not a drag) on a lit-up country jumps to that country's projects
+          const d = down.current
+          if (d && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 6 && hover !== null && regions[hover].projects.length) {
+            window.dispatchEvent(new CustomEvent('portfolio:country', { detail: regions[hover].flag }))
+            // reuse the page's own in-page link handler so Lenis does the smooth scroll
+            document.querySelector<HTMLAnchorElement>('a[href="#projects"]')?.click()
+          }
+          end()
+        }}
         onPointerCancel={end}
         onPointerLeave={() => {
           globeInput.pointer = null
@@ -145,18 +156,29 @@ function GlobeDragZone() {
         <div
           role="tooltip"
           className="glass-tip fixed z-[60] pointer-events-none w-64 rounded-lg p-4 text-sm"
-          style={{ left: Math.min(pos.x + 18, window.innerWidth - 280), top: Math.min(pos.y + 18, window.innerHeight - 260) }}
+          style={{ left: Math.min(pos.x + 18, window.innerWidth - 280), top: Math.max(8, Math.min(pos.y + 18, window.innerHeight - 380)) }}
         >
           <div className="flex items-center gap-2 font-display font-semibold text-base">
             <span className="text-[.65rem] font-bold tracking-wider px-1.5 py-0.5 rounded bg-accent/15 text-accent border border-accent/30">{r.flag}</span> {r.name}
           </div>
           <p className="text-[.7rem] uppercase tracking-widest text-accent mt-1">{r.role}</p>
-          <ul className="mt-3 space-y-1 text-slate-300 text-xs">
-            {r.items.slice(0, 6).map((n) => (
-              <li key={n} className="flex items-center gap-2"><i className="w-1 h-1 rounded-full bg-accent shrink-0" />{n}</li>
-            ))}
-          </ul>
-          {r.items.length > 6 && <p className="text-xs text-slate-400 mt-2">+ {r.items.length - 6} more</p>}
+          {r.projects.length > 0 && (
+            <>
+              <p className="mt-3 text-xs font-semibold text-white">{r.projects.length} project{r.projects.length === 1 ? '' : 's'}</p>
+              <ul className="mt-1.5 space-y-1 text-slate-300 text-xs">
+                {r.projects.slice(0, 8).map((n) => (
+                  <li key={n} className="flex items-center gap-2"><i className="w-1 h-1 rounded-full bg-accent shrink-0" />{n}</li>
+                ))}
+              </ul>
+              {r.projects.length > 8 && <p className="text-xs text-slate-400 mt-1.5">+ {r.projects.length - 8} more</p>}
+            </>
+          )}
+          {r.roles.length > 0 && (
+            <p className="mt-3 text-[.7rem] leading-relaxed text-slate-400">
+              <span className="text-slate-300">Roles:</span> {r.roles.slice(0, 3).join(', ')}{r.roles.length > 3 ? ` +${r.roles.length - 3}` : ''}
+            </p>
+          )}
+          {r.projects.length > 0 && <p className="mt-3 text-[.65rem] uppercase tracking-widest text-accent">Click to see all projects</p>}
         </div>
       )}
     </>
@@ -275,7 +297,7 @@ export default function App() {
             <a href="#contact" className="btn-secondary">Get in touch</a>
           </motion.div>
           <motion.ul initial={{ y: 12 }} animate={{ y: 0 }} transition={{ duration: 0.5 }} className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
-            {['9+ years experience', '14 live projects', 'Clients in the US & UAE'].map((t) => (
+            {['9+ years experience', '55 live projects', `Clients in ${regions.filter((r) => r.projects.length).length} countries`].map((t) => (
               <li key={t} className="inline-flex items-center gap-2"><Check size={14} className="text-accent" />{t}</li>
             ))}
           </motion.ul>

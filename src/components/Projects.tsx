@@ -2,19 +2,27 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, Globe, Image as ImageIcon, X } from 'lucide-react'
-import { projects, type Project } from '../data'
+import { projectCountry, projects, regions, type CountryCode, type Project } from '../data'
+
+const PAGE = 10
 
 const snapshot = (p: Project) => `${import.meta.env.BASE_URL}projects/${p.id}.webp`
 const host = (url: string) => new URL(url).host.replace(/^www\./, '')
 
-type Kind = 'Store' | 'Feature' | 'Landing' | 'Website'
+type Kind = 'Store' | 'Feature' | 'Landing' | 'Website' | 'Platform'
 const KIND: Record<string, Kind> = {
-  obvi: 'Store', origin: 'Store', yaynuts: 'Store', sweetums: 'Store', chocbox: 'Store', javvy: 'Store', onlybean: 'Landing',
+  obvi: 'Store', yaynuts: 'Store', sweetums: 'Store', chocbox: 'Store', javvy: 'Store', onlybean: 'Landing',
   'yaynuts-bundle': 'Feature', 'sweetums-bundle': 'Feature', gruns: 'Landing', menerals: 'Landing',
   noor: 'Website', idarulehsan: 'Website', scalehouse: 'Website',
+  learningpitch: 'Platform', tsb: 'Platform', myinteracademy: 'Platform', houseoflnd: 'Platform', tlc: 'Platform', careforedu: 'Platform',
+  brainfield: 'Platform', bioz: 'Platform', cwrt: 'Platform', sportsfinda: 'Platform', productshare: 'Platform',
+  perfy: 'Store', manchester: 'Store', samsab: 'Store', rostovsky: 'Store', duckworxs: 'Store', oyobox: 'Store', pcgalore: 'Store',
+  nineteen: 'Store', newbys: 'Landing', ddconsulting: 'Website', drleah: 'Website', freedomlaw: 'Website', lakewood: 'Website', paogarcia: 'Website',
+  wearthepants: 'Store', instasmile: 'Store', aimfg: 'Store', hatheat: 'Store', busters: 'Store', goldenthread: 'Store', essayshark: 'Platform', digitalsilk: 'Website', fastproblinds: 'Website',
+  gci: 'Website', aaxon: 'Website', hartland: 'Website', fastpro: 'Website', mindy: 'Website', kltat: 'Website', dockweiler: 'Website', creativelogo: 'Website',
 }
-const KIND_COLOR: Record<Kind, string> = { Store: '#3fb950', Feature: '#a371f7', Landing: '#58a6ff', Website: '#ffa657' }
-const KIND_LABEL: Record<Kind, string> = { Store: 'Storefronts', Feature: 'Custom features', Landing: 'Landing pages', Website: 'Websites' }
+const KIND_COLOR: Record<Kind, string> = { Store: '#3fb950', Feature: '#a371f7', Landing: '#58a6ff', Website: '#ffa657', Platform: '#f778ba' }
+const KIND_LABEL: Record<Kind, string> = { Store: 'Storefronts', Feature: 'Custom features', Landing: 'Landing pages', Website: 'Websites', Platform: 'Platforms & apps' }
 
 function Card({ p, i, onOpen }: { p: Project; i: number; onOpen: () => void }) {
   const kind = KIND[p.id] ?? 'Website'
@@ -229,9 +237,24 @@ function Preview({ p, onClose }: { p: Project; onClose: () => void }) {
 export default function Projects() {
   const [open, setOpen] = useState<Project | null>(null)
   const [filter, setFilter] = useState<Kind | 'All'>('All')
-  const kinds: (Kind | 'All')[] = ['All', 'Store', 'Feature', 'Landing', 'Website']
-  const list = projects.filter((p) => filter === 'All' || KIND[p.id] === filter)
-  const count = (k: Kind | 'All') => (k === 'All' ? projects.length : projects.filter((p) => KIND[p.id] === k).length)
+  const [country, setCountry] = useState<CountryCode | 'All'>('All')
+  const [shown, setShown] = useState(PAGE)
+  const kinds: (Kind | 'All')[] = ['All', 'Store', 'Platform', 'Feature', 'Landing', 'Website']
+  const inCountry = (p: Project) => country === 'All' || projectCountry[p.id] === country
+  const filtered = projects.filter((p) => (filter === 'All' || KIND[p.id] === filter) && inCountry(p))
+  const list = filtered.slice(0, shown)
+  const count = (k: Kind | 'All') => projects.filter((p) => (k === 'All' || KIND[p.id] === k) && inCountry(p)).length
+
+  // clicking a country on the globe filters the list to that country
+  useEffect(() => {
+    const onCountry = (e: Event) => {
+      setCountry((e as CustomEvent<CountryCode>).detail)
+      setFilter('All')
+      setShown(PAGE)
+    }
+    window.addEventListener('portfolio:country', onCountry)
+    return () => window.removeEventListener('portfolio:country', onCountry)
+  }, [])
 
   return (
     <section id="projects" className="relative px-5 sm:px-10 py-28 max-w-7xl mx-auto">
@@ -241,7 +264,32 @@ export default function Projects() {
           <h2 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight mb-5">Live projects <span className="text-[#8b949e]">showcase</span></h2>
           <p className="text-slate-400 leading-relaxed max-w-2xl">Real stores and sites shipped for clients. Hover a card to scroll through the page, open it for a full preview, or jump straight to the live site.</p>
         </div>
-        <p className="lg:col-span-4 lg:text-right font-mono text-sm text-slate-400">{list.length} of {projects.length} projects</p>
+        <p className="lg:col-span-4 lg:text-right font-mono text-sm text-slate-400">showing {list.length} of {filtered.length} projects</p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 mb-4" role="group" aria-label="Filter by country">
+        <span className="text-xs uppercase tracking-widest text-slate-400 mr-1">Country</span>
+        {(['All', ...regions.filter((r) => r.projects.length).map((r) => r.flag)] as (CountryCode | 'All')[]).map((c) => {
+          const r = regions.find((x) => x.flag === c)
+          return (
+            <button
+              key={c}
+              type="button"
+              onClick={() => {
+                setCountry(c)
+                setShown(PAGE)
+              }}
+              aria-pressed={country === c}
+              title={r?.name}
+              className={`inline-flex items-center gap-2 text-sm px-3.5 py-1.5 rounded-full border transition-colors ${
+                country === c ? 'bg-accent/15 border-accent text-white' : 'border-line text-slate-400 hover:text-white hover:border-slate-500'
+              }`}
+            >
+              {c === 'All' ? 'All countries' : r?.name}
+              <span className="font-mono text-xs text-slate-400">{c === 'All' ? projects.length : r?.projects.length}</span>
+            </button>
+          )
+        })}
       </div>
 
       <div className="flex flex-wrap gap-2 mb-8" role="group" aria-label="Filter projects">
@@ -249,7 +297,10 @@ export default function Projects() {
           <button
             key={k}
             type="button"
-            onClick={() => setFilter(k)}
+            onClick={() => {
+              setFilter(k)
+              setShown(PAGE)
+            }}
             aria-pressed={filter === k}
             className={`inline-flex items-center gap-2 text-sm px-3.5 py-1.5 rounded-full border transition-colors ${
               filter === k ? 'bg-white/10 border-slate-400 text-white' : 'border-line text-slate-400 hover:text-white hover:border-slate-500'
@@ -267,6 +318,23 @@ export default function Projects() {
           <Card key={p.id} p={p} i={i} onOpen={() => setOpen(p)} />
         ))}
       </div>
+
+      {filtered.length > shown ? (
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <button type="button" onClick={() => setShown((n) => n + PAGE)} className="btn-secondary">
+            Load more projects
+          </button>
+          <p className="font-mono text-xs text-slate-400">{filtered.length - shown} more to show</p>
+        </div>
+      ) : (
+        shown > PAGE && filtered.length > PAGE && (
+          <div className="mt-10 flex justify-center">
+            <button type="button" onClick={() => setShown(PAGE)} className="btn-secondary">
+              Show fewer
+            </button>
+          </div>
+        )
+      )}
       {createPortal(<AnimatePresence>{open && <Preview p={open} onClose={() => setOpen(null)} />}</AnimatePresence>, document.body)}
     </section>
   )

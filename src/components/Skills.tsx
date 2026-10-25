@@ -1,7 +1,8 @@
+import { lazy, Suspense } from 'react'
 import { motion } from 'framer-motion'
-import { Bot, Database, LibraryBig, MessageSquareText, Plug, Sparkles, type LucideIcon } from 'lucide-react'
+import { Bot, Database, LibraryBig, MessageSquareText, Plug, Rocket, ShieldCheck, Sparkles, type LucideIcon } from 'lucide-react'
 import { skills } from '../data'
-import AIMascot from './AIMascot'
+const AIMascot = lazy(() => import('./AIMascot'))
 import { GlowBg } from './PixelBg'
 import { skillIcons } from './skillIcons'
 
@@ -11,6 +12,7 @@ const LOGOS: [string, string[]][] = [
   ['woocommerce', ['wordpress', 'woocommerce']],
   ['elementor', ['elementor']],
   ['gutenberg', ['wordpress', 'react']],
+  ['wordpress', ['wordpress']],
   ['bigcommerce', ['bigcommerce']],
   ['magento', ['magento']],
   ['moodle', ['moodle']],
@@ -28,6 +30,8 @@ const LOGOS: [string, string[]][] = [
   ['c# /', ['csharp', 'dotnet']],
   ['symfony', ['symfony']],
   ['codeigniter', ['codeigniter']],
+  ['fastapi', ['fastapi']],
+  ['n8n', ['n8n']],
   ['langchain', ['langchain']],
   ['claude', ['claude', 'openai']],
   ['react native', ['react']],
@@ -59,6 +63,8 @@ const SYMBOLS: [string, LucideIcon][] = [
   ['chatbots', MessageSquareText],
   ['prompt', Sparkles],
   ['rest api', Plug],
+  ['deployment', Rocket],
+  ['cloud server', ShieldCheck],
 ]
 
 const logosFor = (label: string) => LOGOS.find(([k]) => label.toLowerCase().includes(k))?.[1]
@@ -117,7 +123,9 @@ export default function Skills() {
           <p className="text-slate-400 leading-relaxed max-w-xl">The stack I use to design, build, ship and scale products, from storefronts to AI agents and cloud infrastructure.</p>
         </div>
         <div className="lg:col-span-4 flex flex-col items-center lg:items-end gap-3">
-          <AIMascot className="w-40 sm:w-48" />
+          <Suspense fallback={<div className="w-44 sm:w-56 aspect-[260/220]" aria-hidden />}>
+            <AIMascot className="w-44 sm:w-56" />
+          </Suspense>
           <p className="font-mono text-sm text-slate-400">{skills.reduce((n, g) => n + g.items.length, 0)} skills · {skills.length} areas</p>
         </div>
       </div>
