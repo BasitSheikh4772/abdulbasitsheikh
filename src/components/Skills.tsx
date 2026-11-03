@@ -1,206 +1,234 @@
-import { lazy, Suspense } from 'react'
-import { motion } from 'framer-motion'
-import { Bot, Database, LibraryBig, MessageSquareText, Plug, Rocket, ShieldCheck, Sparkles, type LucideIcon } from 'lucide-react'
-import { skills } from '../data'
-const AIMascot = lazy(() => import('./AIMascot'))
-import { GlowBg } from './PixelBg'
-import { skillIcons } from './skillIcons'
+"use client";
+
+import dynamic from "next/dynamic";
+import { useRef, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { Bot, Database, LibraryBig, MessageSquareText, Plug, Rocket, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
+import { BlurFade } from "@/components/ui/blur-fade";
+import { skillIcons } from "./skillIcons";
+import { skillGroups, type SkillGroup } from "@/lib/profile";
+
+// WebGL mascot: client only, falls back to the flat version when WebGL is missing
+const AIMascot = dynamic(() => import("./AIMascot"), {
+  ssr: false,
+  loading: () => <div className="aspect-[260/220] w-44 sm:w-56" aria-hidden />,
+});
 
 /** keyword (lower-case, matched inside the skill label) -> logo keys. First match wins; up to 3 logos are shown. */
 const LOGOS: [string, string[]][] = [
-  ['shopify', ['shopify']],
-  ['woocommerce', ['wordpress', 'woocommerce']],
-  ['elementor', ['elementor']],
-  ['gutenberg', ['wordpress', 'react']],
-  ['wordpress', ['wordpress']],
-  ['bigcommerce', ['bigcommerce']],
-  ['magento', ['magento']],
-  ['moodle', ['moodle']],
-  ['react.js', ['react']],
-  ['next.js', ['nextjs']],
-  ['javascript', ['javascript', 'typescript']],
-  ['tailwind', ['tailwind']],
-  ['gsap', ['gsap']],
-  ['sass', ['sass']],
-  ['bootstrap', ['bootstrap']],
-  ['html5', ['html5', 'css3']],
-  ['laravel', ['laravel']],
-  ['core php', ['php']],
-  ['python', ['python', 'flask', 'django']],
-  ['c# /', ['csharp', 'dotnet']],
-  ['symfony', ['symfony']],
-  ['codeigniter', ['codeigniter']],
-  ['fastapi', ['fastapi']],
-  ['n8n', ['n8n']],
-  ['langchain', ['langchain']],
-  ['claude', ['claude', 'openai']],
-  ['react native', ['react']],
-  ['flutter', ['flutter', 'dart']],
-  ['android', ['android']],
-  ['aws ses', ['aws']],
-  ['aws', ['aws']],
-  ['gcp', ['gcp']],
-  ['azure', ['azure']],
-  ['digitalocean', ['digitalocean']],
-  ['cloudflare', ['cloudflare']],
-  ['docker', ['docker']],
-  ['nginx', ['nginx']],
-  ['lamp', ['linux', 'nginx']],
-  ['git', ['git', 'github', 'gitlab']],
-  ['mysql', ['mysql', 'mariadb']],
-  ['postgres', ['postgresql']],
-  ['mongo', ['mongodb']],
-  ['redis', ['redis']],
-  ['stripe', ['stripe', 'paypal']],
-  ['twilio', ['twilio']],
-  ['jwt', ['jwt']],
-]
+  ["motion", ["motion"]],
+  ["magic ui", ["magicui"]],
+  ["shadcn", ["shadcn"]],
+  ["three.js", ["threejs", "react"]],
+  ["shopify", ["shopify"]],
+  ["woocommerce", ["wordpress", "woocommerce"]],
+  ["elementor", ["elementor"]],
+  ["gutenberg", ["wordpress", "react"]],
+  ["wordpress", ["wordpress"]],
+  ["bigcommerce", ["bigcommerce"]],
+  ["magento", ["magento"]],
+  ["moodle", ["moodle"]],
+  ["react.js", ["react"]],
+  ["next.js", ["nextjs"]],
+  ["javascript", ["javascript", "typescript"]],
+  ["tailwind", ["tailwind"]],
+  ["gsap", ["gsap"]],
+  ["sass", ["sass"]],
+  ["bootstrap", ["bootstrap"]],
+  ["html5", ["html5", "css3"]],
+  ["laravel", ["laravel"]],
+  ["core php", ["php"]],
+  ["python", ["python", "flask", "django"]],
+  ["c# /", ["csharp", "dotnet"]],
+  ["symfony", ["symfony"]],
+  ["codeigniter", ["codeigniter"]],
+  ["fastapi", ["fastapi"]],
+  ["n8n", ["n8n"]],
+  ["langchain", ["langchain"]],
+  ["claude", ["claude", "openai"]],
+  ["react native", ["react"]],
+  ["flutter", ["flutter", "dart"]],
+  ["android", ["android"]],
+  ["aws", ["aws"]],
+  ["gcp", ["gcp"]],
+  ["azure", ["azure"]],
+  ["digitalocean", ["digitalocean"]],
+  ["cloudflare", ["cloudflare"]],
+  ["docker", ["docker"]],
+  ["nginx", ["nginx"]],
+  ["lamp", ["linux", "nginx"]],
+  ["git", ["git", "github", "gitlab"]],
+  ["mysql", ["mysql", "mariadb"]],
+  ["postgres", ["postgresql"]],
+  ["mongo", ["mongodb"]],
+  ["redis", ["redis"]],
+  ["stripe", ["stripe", "paypal"]],
+  ["twilio", ["twilio"]],
+  ["jwt", ["jwt"]],
+];
 
-/** skills that have no brand logo get a clear symbolic icon instead */
+/** skills without a brand logo get a symbolic icon */
 const SYMBOLS: [string, LucideIcon][] = [
-  ['llm', Bot],
-  ['rag', LibraryBig],
-  ['chatbots', MessageSquareText],
-  ['prompt', Sparkles],
-  ['rest api', Plug],
-  ['deployment', Rocket],
-  ['cloud server', ShieldCheck],
-]
+  ["llm", Bot],
+  ["rag", LibraryBig],
+  ["chatbots", MessageSquareText],
+  ["prompt", Sparkles],
+  ["rest api", Plug],
+  ["deployment", Rocket],
+  ["cloud server", ShieldCheck],
+];
 
-const logosFor = (label: string) => LOGOS.find(([k]) => label.toLowerCase().includes(k))?.[1]
-const symbolFor = (label: string): LucideIcon => SYMBOLS.find(([k]) => label.toLowerCase().includes(k))?.[1] ?? Database
+const logosFor = (label: string) => LOGOS.find(([k]) => label.toLowerCase().includes(k))?.[1]?.filter((k) => skillIcons[k]).slice(0, 3);
+const symbolFor = (label: string): LucideIcon => SYMBOLS.find(([k]) => label.toLowerCase().includes(k))?.[1] ?? Database;
 
-/** three overlapping logos that represent a whole skill area */
+/** three overlapping logos that stand for a whole skill area */
 const GROUP_LOGOS: Record<string, string[]> = {
-  'E-commerce & CMS': ['shopify', 'wordpress', 'bigcommerce'],
-  'AI & Automation': ['langchain', 'claude', 'openai'],
-  Frontend: ['react', 'nextjs', 'tailwind'],
-  Backend: ['laravel', 'php', 'python'],
-  Mobile: ['flutter', 'react', 'android'],
-  'DevOps & Cloud': ['aws', 'docker', 'cloudflare'],
-  'Data & Integrations': ['postgresql', 'mongodb', 'redis'],
-}
+  ecom: ["shopify", "wordpress", "bigcommerce"],
+  ai: ["langchain", "claude", "openai"],
+  frontend: ["react", "nextjs", "tailwind"],
+  backend: ["laravel", "php", "python"],
+  mobile: ["flutter", "react", "android"],
+  devops: ["aws", "docker", "cloudflare"],
+  data: ["postgresql", "mongodb", "redis"],
+};
+
+const COLORS: Record<string, string> = {
+  ecom: "#3fb950",
+  ai: "#a371f7",
+  frontend: "#58a6ff",
+  backend: "#f778ba",
+  mobile: "#ffa657",
+  devops: "#39c5cf",
+  data: "#e3b341",
+};
+
+// bento order: the two big groups are wide and share a row with one single card
+const ORDER = ["ecom", "ai", "frontend", "backend", "mobile", "devops", "data"];
+const WIDE = new Set(["ecom", "devops"]);
 
 function Logo({ name, size }: { name: string; size: number }) {
-  const ic = skillIcons[name]
-  if (!ic) return null
-  return (
-    <svg viewBox={`0 0 ${ic.w} ${ic.h}`} width={size} height={size} role="img" aria-label={name} dangerouslySetInnerHTML={{ __html: ic.body }} />
-  )
+  const ic = skillIcons[name];
+  if (!ic) return null;
+  return <svg viewBox={`0 0 ${ic.w} ${ic.h}`} width={size} height={size} role="img" aria-label={name} dangerouslySetInnerHTML={{ __html: ic.body }} />;
 }
 
-/** light rounded tile so dark logos (GitHub, Next.js, Laravel...) stay visible on the dark cards */
-const Tile = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <span className={`grid place-items-center rounded-md bg-[#eef2f7] shrink-0 ${className}`}>{children}</span>
-)
+/** light tile so dark logos (GitHub, Next.js, Laravel...) stay visible on the dark cards */
+const Tile = ({ children }: { children: ReactNode }) => <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-[#eef2f7]">{children}</span>;
 
-/** badge text taken from the CV wording, shown only where the CV states a level */
-const LEVEL: Record<string, string> = { 'Laravel (Expert)': 'Expert' }
+function Card({ g, i }: { g: SkillGroup; i: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const color = COLORS[g.id];
 
-type Meta = { color: string; span: string; blurb: string }
-const META: Record<string, Meta> = {
-  'E-commerce & CMS': { color: '#3fb950', span: 'lg:col-span-2', blurb: 'Stores and content platforms that convert.' },
-  'AI & Automation': { color: '#a371f7', span: '', blurb: 'LLM apps, agents and workflow automation.' },
-  Frontend: { color: '#58a6ff', span: '', blurb: 'Fast, polished interfaces.' },
-  Backend: { color: '#f778ba', span: '', blurb: 'Solid APIs and application logic.' },
-  Mobile: { color: '#ffa657', span: '', blurb: 'Cross-platform iOS and Android.' },
-  'DevOps & Cloud': { color: '#39c5cf', span: 'lg:col-span-2', blurb: 'Hosting, security and delivery pipelines.' },
-  'Data & Integrations': { color: '#e3b341', span: '', blurb: 'Databases, payments and third-party APIs.' },
-}
+  // cursor spotlight that follows the mouse across the card
+  const onMove = (e: MouseEvent) => {
+    const r = ref.current?.getBoundingClientRect();
+    if (!r) return;
+    ref.current?.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    ref.current?.style.setProperty("--my", `${e.clientY - r.top}px`);
+  };
 
-// bento order: wide cards share a row with a single card
-const ORDER = ['E-commerce & CMS', 'AI & Automation', 'Frontend', 'Backend', 'Mobile', 'DevOps & Cloud', 'Data & Integrations']
-
-export default function Skills() {
-  const groups = ORDER.map((g) => skills.find((s) => s.group === g)).filter((g): g is (typeof skills)[number] => Boolean(g))
   return (
-    <section id="skills" className="px-5 sm:px-10 py-28 max-w-7xl mx-auto">
-      <GlowBg />
-      <div className="grid lg:grid-cols-12 gap-8 items-end mb-12">
-        <div className="lg:col-span-8">
-          <p className="eyebrow mb-3">Toolbox</p>
-          <h2 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight mb-5">Skills & <span className="text-[#8b949e]">technologies</span></h2>
-          <p className="text-slate-400 leading-relaxed max-w-xl">The stack I use to design, build, ship and scale products, from storefronts to AI agents and cloud infrastructure.</p>
-        </div>
-        <div className="lg:col-span-4 flex flex-col items-center lg:items-end gap-3">
-          <Suspense fallback={<div className="w-44 sm:w-56 aspect-[260/220]" aria-hidden />}>
-            <AIMascot className="w-44 sm:w-56" />
-          </Suspense>
-          <p className="font-mono text-sm text-slate-400">{skills.reduce((n, g) => n + g.items.length, 0)} skills · {skills.length} areas</p>
+    <BlurFade inView delay={0.05 * (i % 3)} className={WIDE.has(g.id) ? "md:col-span-2" : ""}>
+      <div
+        ref={ref}
+        onMouseMove={onMove}
+        style={{ "--c": color, "--mx": "100%", "--my": "0%" } as CSSProperties}
+        className="glass group relative h-full overflow-hidden rounded-3xl p-6 transition duration-300 hover:-translate-y-1 sm:p-7"
+      >
+        <span aria-hidden className="absolute inset-0 opacity-70" style={{ background: `radial-gradient(520px circle at 100% 0%, ${color}22, transparent 60%)` }} />
+        <span aria-hidden className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, ${color}, transparent 70%)` }} />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          style={{ background: `radial-gradient(320px circle at var(--mx) var(--my), ${color}26, transparent 70%)`, boxShadow: `inset 0 0 0 1px ${color}55` }}
+        />
+
+        <div className="relative">
+          <div className="mb-6 flex flex-wrap items-start gap-x-4 gap-y-3">
+            <span className="flex shrink-0 pl-1" aria-hidden>
+              {GROUP_LOGOS[g.id].map((n, k) => (
+                <span key={n} className="-ml-2.5 grid h-11 w-11 place-items-center rounded-full bg-[#eef2f7] ring-[3px] ring-[#0d0f18] first:ml-0" style={{ zIndex: 3 - k }}>
+                  <Logo name={n} size={24} />
+                </span>
+              ))}
+            </span>
+            <div className="min-w-[10rem] grow basis-[10rem]">
+              <h3 className="text-xl font-semibold leading-tight tracking-tight">{g.title}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{g.blurb}</p>
+            </div>
+            <span className="display text-4xl leading-none" style={{ color }}>
+              {String(g.items.length).padStart(2, "0")}
+            </span>
+          </div>
+
+          <ul className="flex flex-wrap gap-2">
+            {g.items.map((it) => {
+              const keys = logosFor(it.name);
+              const Symbol = symbolFor(it.name);
+              return (
+                <li
+                  key={it.name}
+                  className="inline-flex items-center gap-2.5 rounded-xl border border-white/10 bg-black/25 py-1.5 pl-1.5 pr-3 text-[.8rem] text-white/80 transition-colors hover:border-[var(--c)] hover:text-white"
+                >
+                  {keys && keys.length > 0 ? (
+                    <span className="flex gap-1">
+                      {keys.map((k) => (
+                        <Tile key={k}>
+                          <Logo name={k} size={16} />
+                        </Tile>
+                      ))}
+                    </span>
+                  ) : (
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md" style={{ background: `${color}26`, color }}>
+                      <Symbol size={14} />
+                    </span>
+                  )}
+                  {it.name}
+                  {it.expert && (
+                    <b className="ml-0.5 rounded px-1.5 py-px font-mono text-[.6rem] font-bold uppercase tracking-wider" style={{ background: `${color}26`, color }}>
+                      Expert
+                    </b>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </div>
+    </BlurFade>
+  );
+}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {groups.map((g, gi) => {
-          const m = META[g.group]
-          return (
-            <motion.article
-              key={g.group}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ delay: 0.05 * (gi % 3) }}
-              className={`group relative overflow-hidden rounded-xl border border-line p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1 ${m.span} ${m.span ? 'md:col-span-2' : ''}`}
-              style={{ background: `radial-gradient(520px circle at 100% 0%, ${m.color}1f, transparent 60%), #161b22` }}
-            >
-              <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: `linear-gradient(90deg, ${m.color}, transparent)` }} />
-              <span className="pointer-events-none absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: `inset 0 0 0 1px ${m.color}77, 0 18px 50px -20px ${m.color}88` }} />
+export function Skills() {
+  const groups = ORDER.map((id) => skillGroups.find((g) => g.id === id)).filter((g): g is SkillGroup => !!g);
+  const total = skillGroups.reduce((n, g) => n + g.items.length, 0);
 
-              <div className="flex items-start gap-4 mb-6">
-                {/* overlapping brand logos for this skill area */}
-                <span className="flex shrink-0 pl-1" aria-hidden>
-                  {GROUP_LOGOS[g.group].map((n, i) => (
-                    <span
-                      key={n}
-                      className="grid place-items-center w-11 h-11 rounded-full bg-[#eef2f7] -ml-2.5 first:ml-0 ring-[3px] ring-[#161b22]"
-                      style={{ zIndex: 3 - i }}
-                    >
-                      <Logo name={n} size={24} />
-                    </span>
-                  ))}
-                </span>
-                <div className="min-w-0 grow">
-                  <h3 className="font-display text-xl font-semibold leading-tight">{g.group}</h3>
-                  <p className="text-sm text-slate-400 mt-1">{m.blurb}</p>
-                </div>
-                <span className="font-display text-3xl font-semibold leading-none" style={{ color: m.color }}>{String(g.items.length).padStart(2, '0')}</span>
-              </div>
+  return (
+    <section id="skills" className="px-5 py-16 sm:py-28">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12 grid items-end gap-8 lg:grid-cols-12">
+          <BlurFade inView className="lg:col-span-8">
+            <span className="glass mb-6 inline-block rounded-full px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-accent-2">Toolbox</span>
+            <h2 className="display text-4xl sm:text-6xl">
+              Skills & <span className="serif-italic text-glow">technologies</span>
+            </h2>
+            <p className="mt-5 max-w-xl text-muted-foreground">
+              The stack I use to design, build, ship and scale products, from storefronts to AI agents and cloud infrastructure.
+            </p>
+          </BlurFade>
+          <div className="flex flex-col items-center gap-3 lg:col-span-4 lg:items-end">
+            <AIMascot className="w-44 sm:w-56" />
+            <p className="font-mono text-sm text-muted-foreground">
+              {total} skills · {skillGroups.length} areas
+            </p>
+          </div>
+        </div>
 
-              <ul className="flex flex-wrap gap-2">
-                {g.items.map((item) => {
-                  const keys = logosFor(item)?.filter((k) => skillIcons[k]).slice(0, 3)
-                  const Symbol = symbolFor(item)
-                  return (
-                    <li
-                      key={item}
-                      className="inline-flex items-center gap-2.5 rounded-md border border-line bg-black/25 pl-1.5 pr-3 py-1.5 text-[.8rem] text-slate-200 transition-colors hover:border-[var(--c)] hover:text-white"
-                      style={{ ['--c' as string]: m.color }}
-                    >
-                      {keys && keys.length > 0 ? (
-                        <span className="flex gap-1">
-                          {keys.map((k) => (
-                            <Tile key={k} className="w-6 h-6">
-                              <Logo name={k} size={16} />
-                            </Tile>
-                          ))}
-                        </span>
-                      ) : (
-                        <span className="grid place-items-center w-6 h-6 rounded-md shrink-0" style={{ background: `${m.color}26`, color: m.color }}>
-                          <Symbol size={14} />
-                        </span>
-                      )}
-                      {item}
-                      {LEVEL[item] && (
-                        <b className="ml-0.5 rounded px-1.5 py-px text-[.6rem] font-bold uppercase tracking-wider" style={{ background: `${m.color}26`, color: m.color }}>{LEVEL[item]}</b>
-                      )}
-                    </li>
-                  )
-                })}
-              </ul>
-            </motion.article>
-          )
-        })}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {groups.map((g, i) => (
+            <Card key={g.id} g={g} i={i} />
+          ))}
+        </div>
       </div>
     </section>
-  )
+  );
 }

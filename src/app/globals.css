@@ -1,0 +1,273 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Dark-only theme: near-black canvas, warm-to-lavender glow accents */
+:root {
+  --background: #04060d;
+  --foreground: #f4f1ff;
+  --card: rgba(255, 255, 255, 0.035);
+  --card-foreground: #f4f1ff;
+  --popover: #0c0c12;
+  --popover-foreground: #f4f1ff;
+  --primary: #f4f1ff;
+  --primary-foreground: #04060d;
+  --secondary: rgba(255, 255, 255, 0.06);
+  --secondary-foreground: #f4f1ff;
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: #9b98b4;
+  --accent: #8b9bff;
+  --accent-foreground: #04060d;
+  --accent-2: #22d3ee;
+  --destructive: #ff6b81;
+  --border: rgba(255, 255, 255, 0.09);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #8b9bff;
+  --radius: 1rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-2: var(--accent-2);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono-x);
+  --font-heading: var(--font-display);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
+  --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
+  --animate-orbit: orbit calc(var(--duration)*1s) linear infinite;
+  --animate-meteor: meteor 5s linear infinite;
+  --animate-float: float 14s ease-in-out infinite;
+  --animate-spin-slow: spin 40s linear infinite;
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-100% - var(--gap))); }
+  }
+  @keyframes marquee-vertical {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-100% - var(--gap))); }
+  }
+  @keyframes shimmer-slide {
+    to { transform: translate(calc(100cqw - 100%), 0); }
+  }
+  @keyframes spin-around {
+    0% { transform: translateZ(0) rotate(0); }
+    15%, 35% { transform: translateZ(0) rotate(90deg); }
+    65%, 85% { transform: translateZ(0) rotate(270deg); }
+    100% { transform: translateZ(0) rotate(360deg); }
+  }
+  @keyframes orbit {
+    0% { transform: rotate(calc(var(--angle) * 1deg)) translateY(calc(var(--radius) * 1px)) rotate(calc(var(--angle) * -1deg)); }
+    100% { transform: rotate(calc(var(--angle) * 1deg + 360deg)) translateY(calc(var(--radius) * 1px)) rotate(calc((var(--angle) * -1deg) - 360deg)); }
+  }
+  @keyframes meteor {
+    0% { transform: rotate(var(--angle)) translateX(0); opacity: 1; }
+    70% { opacity: 1; }
+    100% { transform: rotate(var(--angle)) translateX(-500px); opacity: 0; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(30px, -26px, 0) scale(1.08); }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+  overflow-x: clip;
+}
+
+body {
+  overflow-x: clip;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display), system-ui, sans-serif;
+  }
+}
+
+/* Editorial display type, like the big glowing headlines on motionsites */
+.display {
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.serif-italic {
+  /* accent words: same display family, no italic serif */
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.text-glow {
+  background: linear-gradient(180deg, #fff 30%, #c7d2fe 70%, #22d3ee 120%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 28px rgba(139, 155, 255, 0.35));
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 25%, transparent 75%);
+}
+
+.glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+}
+
+/* Hero orb */
+.orb {
+  background:
+    radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.95), transparent 22%),
+    radial-gradient(circle at 70% 75%, rgba(255, 207, 163, 0.85), transparent 45%),
+    radial-gradient(circle at 40% 55%, #6366f1 0%, #1e1b8a 55%, #02041a 100%);
+  box-shadow:
+    0 0 120px 20px rgba(99, 102, 241, 0.35),
+    inset -30px -30px 80px rgba(0, 0, 0, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* macOS Dock-style magnification: the hovered tile grows and its neighbours follow */
+.dock-tile {
+  transition: transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+  transform-origin: 50% 80%;
+}
+.dock-tile:hover {
+  transform: scale(1.32) translateY(-8px);
+  z-index: 2;
+}
+.dock-tile:hover + .dock-tile,
+.dock-tile:has(+ .dock-tile:hover) {
+  transform: scale(1.14) translateY(-4px);
+}
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ---------- Nexora icon set: duotone, draw-in on scroll, hover micro-animations ---------- */
+.ico {
+  overflow: visible;
+  transition: transform 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.ico * {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.ico [data-duo] {
+  fill: currentColor;
+  fill-opacity: 0.16;
+}
+
+/* draw the outlines on as the icon scrolls into view (Chrome, Edge, Safari 26+; elsewhere it simply shows) */
+@supports (animation-timeline: view()) {
+  .ico [pathLength] {
+    stroke-dasharray: 1;
+    animation: ico-draw linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 75%;
+  }
+  .ico [data-duo] {
+    animation: ico-draw linear both, ico-fade linear both;
+    animation-timeline: view(), view();
+    animation-range: entry 0% entry 75%, entry 25% entry 95%;
+  }
+}
+@keyframes ico-draw {
+  0% { stroke-dashoffset: 1; opacity: 0; }
+  12% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes ico-fade {
+  from { fill-opacity: 0; }
+  to { fill-opacity: 0.16; }
+}
+
+/* hover: the icon reacts when its button, link or card is hovered */
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-nudge { transform: translateX(4px); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-nudge-l { transform: translateX(-4px); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-upright { transform: translate(3px, -3px); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-rot90 { transform: rotate(90deg); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-spin { transform: rotate(-360deg); transition-duration: 0.8s; }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-pop { transform: scale(1.18); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-float { transform: translateY(-3px); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-fly { transform: translate(3px, -3px) rotate(-10deg); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-drop { animation: ico-bounce 0.7s ease; }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-swing { animation: ico-swing 0.9s ease; transform-origin: 50% 0; }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-ring { animation: ico-ring 0.7s ease; }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-wave { animation: ico-wave 0.9s ease; transform-origin: 50% 90%; }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-twinkle .sp-a { transform: rotate(35deg) scale(1.12); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-twinkle .sp-b { animation: ico-twinkle 0.9s ease infinite; }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-globe .g-m { transform: scaleX(0.3); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-layers .ly-t { transform: translateY(-2.5px); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-layers .ly-b { transform: translateY(2.5px); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-code .cd-l { transform: translateX(-2.5px); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-code .cd-r { transform: translateX(2.5px); }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-blink .bot-eye { animation: ico-blink 0.9s ease; }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-pulse .ai-spark { animation: ico-pulse 1s ease infinite; }
+:is(a, button, summary, [role="button"], .group, .ico-host):hover .ico-mid { transform: scaleX(0.55); }
+
+@keyframes ico-bounce { 0%, 100% { transform: translateY(0); } 35% { transform: translateY(-5px); } 65% { transform: translateY(0); } 80% { transform: translateY(-2px); } }
+@keyframes ico-swing { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(16deg); } 40% { transform: rotate(-13deg); } 60% { transform: rotate(8deg); } 80% { transform: rotate(-4deg); } }
+@keyframes ico-ring { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(-14deg); } 30% { transform: rotate(12deg); } 45% { transform: rotate(-10deg); } 60% { transform: rotate(8deg); } 75% { transform: rotate(-4deg); } }
+@keyframes ico-wave { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-14deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-6deg); } }
+@keyframes ico-twinkle { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.5) rotate(25deg); } }
+@keyframes ico-blink { 0%, 40%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.1); } }
+@keyframes ico-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.45) rotate(45deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ico, .ico * { transition: none !important; animation: none !important; }
+}
+
+/* tall cards (flyers) get a gentler Dock magnification so they never run out of room */
+.dock-tile.soft:hover { transform: scale(1.06) translateY(-6px); }
+.dock-tile.soft:hover + .dock-tile,
+.dock-tile.soft:has(+ .dock-tile.soft:hover) { transform: scale(1.02) translateY(-3px); }

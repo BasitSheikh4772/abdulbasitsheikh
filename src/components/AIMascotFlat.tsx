@@ -1,5 +1,7 @@
+"use client";
+
 import { useEffect, useRef } from 'react'
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { motion, useMotionValue, useSpring, useTransform } from 'motion/react'
 
 /**
  * Original AI assistant mascot (purple helmet, dark visor, glowing cyan eyes).

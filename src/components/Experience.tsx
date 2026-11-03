@@ -1,282 +1,278 @@
-import { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
-import { experience, experienceSpans } from '../data'
-import { PixelBg } from './PixelBg'
+"use client";
 
-const COUNTRY = { PK: '#58a6ff', AE: '#a371f7', US: '#3fb950' } as const
-type Code = keyof typeof COUNTRY
-const NAMES: Record<Code, string> = { PK: 'Pakistan', AE: 'UAE', US: 'United States' }
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { AnimatePresence, motion } from "motion/react";
+import { ChevronLeft, ChevronRight, MapPin } from "@/components/icons";
+import { BlurFade } from "@/components/ui/blur-fade";
+import { NumberTicker } from "@/components/ui/number-ticker";
+import { SectionHead } from "./SectionHead";
+import { experience, type Country } from "@/lib/profile";
 
-const countryOf = (place: string): Code => (place.endsWith('UAE') ? 'AE' : place.endsWith('PK') ? 'PK' : 'US')
-const nowYear = () => {
-  const d = new Date()
-  return d.getFullYear() + d.getMonth() / 12
-}
-const duration = (start: number, end: number) => {
-  const m = Math.max(1, Math.round((end - start) * 12))
-  const y = Math.floor(m / 12)
-  const r = m % 12
-  return [y ? `${y} yr${y > 1 ? 's' : ''}` : '', r ? `${r} mo` : ''].filter(Boolean).join(' ')
-}
-const initials = (org: string) =>
-  org.replace(/\(.*?\)/g, '').split(/[\s—-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase()
-const shortOrg = (org: string) => org.replace(/ — .*/, '').replace(/ \(.*?\)/, '')
-const shortRole = (role: string) =>
-  role.replace('Senior', 'Sr.').replace('Software Engineer', 'Engineer').replace(' & DevOps Engineer', ' & DevOps').replace(' (Contractual)', '')
+type Filter = "All roles" | Country;
 
-const FIRST = 2017
+const filters: Filter[] = ["All roles", "Pakistan", "UAE", "United States"];
+const COLOR: Record<Country, string> = { Pakistan: "#34d399", UAE: "#f59e0b", "United States": "#8b9bff" };
+const START = 2017;
+const END = 2027;
+const span = END - START;
+const years = Array.from({ length: END - START }, (_, i) => START + i);
+const AUTOPLAY_MS = 3800;
 
-// real company logos: drop files into src/assets/companies/ (see the README there)
-const logoFiles = import.meta.glob('/src/assets/companies/*.{png,jpg,jpeg,webp,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
-const slug = (org: string) => shortOrg(org).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-const logoFor = (org: string) => {
-  const key = slug(org)
-  return Object.entries(logoFiles).find(([path]) => path.split('/').pop()!.replace(/\.[^.]+$/, '') === key)?.[1]
-}
+const pos = (t: number) => `${((t - START) / span) * 100}%`;
 
-export default function Experience() {
-  const [hover, setHover] = useState<number | null>(null)
-  const [filter, setFilter] = useState<Code | 'ALL'>('ALL')
-  const chart = useRef<HTMLDivElement>(null)
-  const [cw, setCw] = useState(720) // real pixel width of the bar area, so labels can tell if they fit
+export function Experience() {
+  const [filter, setFilter] = useState<Filter>("All roles");
+  const [sel, setSel] = useState(0);
+  const [auto, setAuto] = useState(true);
+  const [inView, setInView] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+
+  const matches = (i: number) => filter === "All roles" || experience[i].country === filter;
+  const ids = experience.map((_, i) => i).filter(matches);
+  const role = experience[sel];
+  const color = COLOR[role.country];
 
   useEffect(() => {
-    const el = chart.current
-    if (!el) return
-    const ro = new ResizeObserver(() => setCw(el.clientWidth))
-    ro.observe(el)
-    setCw(el.clientWidth)
-    return () => ro.disconnect()
-  }, [])
+    const el = box.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.3 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
-  const now = nowYear()
-  const last = Math.ceil(now) + 0.2
-  const span = last - FIRST
-  const years = Array.from({ length: Math.floor(now) - FIRST + 1 }, (_, i) => FIRST + i)
-  const pct = (y: number) => `${((y - FIRST) / span) * 100}%`
+  // the tour walks through the roles until the visitor takes over
+  useEffect(() => {
+    if (!auto || !inView) return;
+    const t = setInterval(() => setSel((cur) => ids[(Math.max(0, ids.indexOf(cur)) + 1) % ids.length]), AUTOPLAY_MS);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, inView, filter]);
 
-  const rows = experience.map((e, i) => ({ ...e, i, code: countryOf(e.place), span: experienceSpans[e.org] ?? [FIRST, FIRST + 1] }))
-  const visible = (c: Code) => filter === 'ALL' || filter === c
-  const dim = (i: number, c: Code) => !visible(c) || (hover !== null && hover !== i)
+  const choose = (f: Filter) => {
+    setFilter(f);
+    const first = experience.findIndex((r) => f === "All roles" || r.country === f);
+    if (!(f === "All roles" || experience[sel].country === f)) setSel(first);
+  };
+
+  const pick = (i: number) => {
+    setSel(i);
+    setAuto(false);
+  };
+  const step = (d: number) => {
+    const at = Math.max(0, ids.indexOf(sel));
+    pick(ids[(at + d + ids.length) % ids.length]);
+  };
 
   return (
-    <section id="experience" className="theme-light px-5 sm:px-10 py-28 max-w-7xl mx-auto">
-      <PixelBg side="left" />
-      <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-end mb-12">
-        <div className="lg:col-span-7">
-          <p className="eyebrow mb-3">Experience</p>
-          <h2 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight mb-5">Where I've <span className="text-[#8b949e]">worked</span></h2>
-          <p className="text-slate-400 leading-relaxed max-w-xl">
-            Since 2017 I have worked across agencies, product teams and international clients, growing from web developer to lead engineer.
-          </p>
-        </div>
-        <dl className="lg:col-span-5 grid grid-cols-3 gap-px bg-line border border-line rounded-lg overflow-hidden">
-          {[['10', 'Roles'], ['3', 'Countries'], ['9+', 'Years']].map(([v, l]) => (
-            <div key={l} className="bg-[#161b22] p-5">
-              <dt className="font-display text-3xl font-semibold text-white">{v}</dt>
-              <dd className="text-xs text-slate-400 mt-1">{l}</dd>
-            </div>
+    <section id="experience" className="px-5 py-16 sm:py-28">
+      <div ref={box} className="mx-auto max-w-6xl">
+        <SectionHead
+          eyebrow="Experience"
+          title={
+            <>
+              Where I&apos;ve <span className="serif-italic text-glow">worked</span>
+            </>
+          }
+          text="Since 2017 I have worked across agencies, product teams and international clients, growing from web developer to lead engineer."
+        />
+
+        {/* headline numbers */}
+        <div className="mb-10 grid grid-cols-3 gap-3 sm:gap-4">
+          {[
+            { v: 10, s: "", l: "Roles" },
+            { v: 3, s: "", l: "Countries" },
+            { v: 9, s: "+", l: "Years" },
+          ].map((x, i) => (
+            <BlurFade key={x.l} inView delay={i * 0.08}>
+              <div className="glass rounded-3xl px-4 py-5 text-center sm:py-7">
+                <p className="display text-4xl sm:text-6xl">
+                  <NumberTicker value={x.v} className="text-glow" />
+                  <span className="text-glow">{x.s}</span>
+                </p>
+                <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{x.l}</p>
+              </div>
+            </BlurFade>
           ))}
-        </dl>
-      </div>
+        </div>
 
-      {/* filter chips */}
-      <div className="flex flex-wrap items-center gap-2 mb-4" role="group" aria-label="Filter by country">
-        {(['ALL', 'PK', 'AE', 'US'] as const).map((k) => (
-          <button
-            key={k}
-            type="button"
-            onClick={() => setFilter(k)}
-            aria-pressed={filter === k}
-            className={`inline-flex items-center gap-2 text-sm px-3.5 py-1.5 rounded-full border transition-colors ${
-              filter === k ? 'bg-white/10 border-slate-400 text-white' : 'border-line text-slate-400 hover:text-white hover:border-slate-500'
-            }`}
-          >
-            {k !== 'ALL' && <i className="w-2.5 h-2.5 rounded-sm" style={{ background: COUNTRY[k] }} />}
-            {k === 'ALL' ? 'All roles' : NAMES[k]}
-          </button>
-        ))}
-        <span className="ml-auto text-xs text-slate-400 hidden sm:block">Hover a bar or card to link them</span>
-      </div>
+        {/* country filter doubles as the legend */}
+        <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
+          {filters.map((f) => (
+            <button
+              key={f}
+              onClick={() => {
+                choose(f);
+                setAuto(false);
+              }}
+              className={`relative flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${filter === f ? "border-transparent text-black" : "border-white/12 text-white/65 hover:text-white"}`}
+            >
+              {filter === f && <motion.span layoutId="exp-filter" className="absolute inset-0 rounded-full bg-white" transition={{ type: "spring", stiffness: 400, damping: 32 }} />}
+              {f !== "All roles" && <i className="relative h-2 w-2 rounded-full" style={{ background: COLOR[f] }} />}
+              <span className="relative">{f}</span>
+            </button>
+          ))}
+        </div>
 
-      {/* career timeline */}
-      <div className="glass rounded-lg p-5 sm:p-6 overflow-x-auto">
-        <div className="min-w-[720px]">
-          <div className="grid grid-cols-[10.5rem_1fr]">
-            <div />
-            <div className="relative h-6 mb-1">
-              {years.map((y) => (
-                <span key={y} className="absolute text-[.65rem] font-mono text-slate-400 -translate-x-1/2" style={{ left: pct(y) }}>{y}</span>
-              ))}
-            </div>
+        <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
+          {/* career chart: every role is a bar on a 2017 to today axis */}
+          <BlurFade inView>
+            <div className="glass rounded-[2rem] p-3 sm:p-5">
+              <div className="mb-2 hidden grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] gap-x-4 px-3 md:grid">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">Role</span>
+                <div className="relative h-4">
+                  {years.map((y, i) => (
+                    <span key={y} className="absolute -translate-x-1/2 font-mono text-[10px] text-white/35" style={{ left: pos(y + 0.5) }}>
+                      {i % 2 === 0 ? String(y).slice(2) : "·"}
+                    </span>
+                  ))}
+                </div>
+              </div>
 
-            <ul>
-              {rows.map((r) => (
-                <li
-                  key={r.i}
-                  onMouseEnter={() => setHover(r.i)}
-                  onMouseLeave={() => setHover(null)}
-                  className={`h-9 flex items-center text-xs pr-3 truncate transition-opacity ${dim(r.i, r.code) ? 'opacity-30' : 'text-slate-200'}`}
-                >
-                  {shortOrg(r.org)}
-                </li>
-              ))}
-            </ul>
-
-            <div className="relative" ref={chart}>
-              {years.map((y) => (
-                <i key={y} className="absolute top-0 bottom-0 w-px bg-line/60" style={{ left: pct(y) }} />
-              ))}
-              {/* today marker */}
-              <i className="absolute top-0 bottom-0 w-px bg-gh-green/70" style={{ left: pct(now) }} />
-              <span className="absolute -top-7 -translate-x-1/2 text-[.6rem] font-bold uppercase tracking-wider text-gh-green" style={{ left: pct(now) }}>Today</span>
-
-              {rows.map((r) => {
-                const [a, b] = r.span
-                const end = b ?? now
-                const c = COUNTRY[r.code]
-                const label = shortRole(r.role)
-                const textPx = label.length * 5.9 + 20
-                const barPx = ((end - a) / span) * cw
-                const inside = barPx >= textPx
-                // too narrow for its title: put the title beside the bar, on the right if there is room, otherwise on the left
-                const room = cw - ((end - FIRST) / span) * cw >= textPx + 10
-                return (
-                  <div key={r.i} className="relative h-9">
-                    <motion.button
-                      type="button"
-                      onMouseEnter={() => setHover(r.i)}
-                      onMouseLeave={() => setHover(null)}
-                      onFocus={() => setHover(r.i)}
-                      onBlur={() => setHover(null)}
-                      initial={{ scaleX: 0 }}
-                      whileInView={{ scaleX: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: 0.05 * r.i }}
-                      aria-label={`${r.role}, ${r.org}, ${r.period}`}
-                      className="absolute top-1.5 h-6 rounded origin-left text-left px-2 text-[10px] font-semibold text-[#0d1117] overflow-hidden whitespace-nowrap transition-opacity"
-                      style={{
-                        left: pct(a),
-                        width: `${((end - a) / span) * 100}%`,
-                        minWidth: 8,
-                        background: c,
-                        opacity: dim(r.i, r.code) ? 0.18 : 1,
-                        boxShadow: hover === r.i || b === null ? `0 0 16px ${c}` : undefined,
-                      }}
-                    >
-                      {inside && label}
-                    </motion.button>
-                    {!inside && (
-                      <span
-                        className="absolute top-1.5 h-6 flex items-center text-[10px] font-semibold text-slate-200 whitespace-nowrap pointer-events-none transition-opacity"
-                        style={room ? { left: `calc(${pct(end)} + 6px)`, opacity: dim(r.i, r.code) ? 0.25 : 1 } : { right: `calc(100% - ${pct(a)} + 6px)`, opacity: dim(r.i, r.code) ? 0.25 : 1 }}
+              <ul className="space-y-1">
+                {experience.map((r, i) => {
+                  const active = i === sel;
+                  const c = COLOR[r.country];
+                  return (
+                    <li key={r.company + r.period} className={`transition-opacity duration-300 ${matches(i) ? "" : "opacity-25"}`}>
+                      <button
+                        onClick={() => matches(i) && pick(i)}
+                        aria-pressed={active}
+                        className="group relative grid w-full cursor-pointer grid-cols-1 items-center gap-x-4 gap-y-2 rounded-2xl px-3 py-2.5 text-left md:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]"
                       >
-                        {label}
+                        {active && <motion.span layoutId="exp-active" className="absolute inset-0 rounded-2xl bg-white/[0.07] ring-1" style={{ ["--tw-ring-color" as string]: `${c}88` }} transition={{ type: "spring", stiffness: 380, damping: 34 }} />}
+                        <span className="relative flex min-w-0 items-center gap-3">
+                          <Image src={r.logo} alt="" width={36} height={36} className="h-9 w-9 shrink-0 rounded-xl bg-white object-contain" />
+                          <span className="min-w-0">
+                            <span className={`block truncate text-sm font-semibold leading-tight transition-colors ${active ? "text-white" : "text-white/80 group-hover:text-white"}`}>{r.role}</span>
+                            <span className="block truncate text-xs text-muted-foreground">{r.company}</span>
+                          </span>
+                        </span>
+                        <span className="relative block h-3 rounded-full bg-white/[0.05]">
+                          <motion.span
+                            initial={{ scaleX: 0 }}
+                            whileInView={{ scaleX: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8, delay: 0.05 * i, ease: [0.22, 1, 0.36, 1] }}
+                            className="absolute inset-y-0 origin-left rounded-full"
+                            style={{
+                              left: pos(r.from),
+                              width: `max(${((r.to - r.from) / span) * 100}%, 8px)`,
+                              background: `linear-gradient(90deg, ${c}, ${c}aa)`,
+                              boxShadow: active ? `0 0 18px ${c}99` : "none",
+                              opacity: active ? 1 : 0.6,
+                            }}
+                          />
+                          {r.current && <span className="absolute top-1/2 h-2 w-2 -translate-y-1/2 animate-ping rounded-full" style={{ left: pos(r.to), background: c }} />}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </BlurFade>
+
+          {/* the selected role */}
+          <BlurFade inView delay={0.1}>
+            <div className="lg:sticky lg:top-28">
+              <div className="glass relative overflow-hidden rounded-[2rem] p-6 sm:p-8">
+                <motion.span
+                  aria-hidden
+                  animate={{ background: `radial-gradient(420px circle at 100% 0%, ${color}33, transparent 65%)` }}
+                  transition={{ duration: 0.6 }}
+                  className="absolute inset-0"
+                />
+                <span aria-hidden className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, ${color}, transparent 70%)` }} />
+
+                <div className="relative">
+                  <div className="flex items-center justify-between">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/45">
+                      Role {String(experience.length - sel).padStart(2, "0")} / {experience.length}
+                    </p>
+                    {role.current && (
+                      <span className="flex items-center gap-2 rounded-full bg-accent-2/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-accent-2">
+                        <i className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-2" /> Current
                       </span>
                     )}
                   </div>
-                )
-              })}
+
+                  <AnimatePresence mode="wait">
+                    <motion.div key={sel} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.28 }}>
+                      <div className="mt-6 flex items-center gap-4">
+                        <Image src={role.logo} alt={role.company} width={72} height={72} className="h-[4.5rem] w-[4.5rem] shrink-0 rounded-2xl bg-white object-contain p-0.5 ring-4 ring-white/10" />
+                        <div className="min-w-0">
+                          <p className="text-sm text-muted-foreground">{role.company}</p>
+                          <h3 className="mt-1 text-2xl font-semibold leading-tight tracking-tight sm:text-[1.7rem]">{role.role}</h3>
+                        </div>
+                      </div>
+
+                      <dl className="mt-7 grid grid-cols-2 gap-3">
+                        {[
+                          ["Period", role.period],
+                          ["Duration", role.duration],
+                          ["Location", `${role.place}`],
+                          ["Country", role.country],
+                        ].map(([k, v]) => (
+                          <div key={k} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                            <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">{k}</dt>
+                            <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                              {k === "Location" && <MapPin size={14} />}
+                              {v}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+
+                      <div className="mt-6">
+                        <div className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
+                          <span>Career position</span>
+                          <span style={{ color }}>Year {Math.floor(role.from - START) + 1} of {Math.ceil(experience[0].to - START)}</span>
+                        </div>
+                        <div className="relative h-2 rounded-full bg-white/[0.06]">
+                          <motion.span
+                            initial={false}
+                            animate={{ left: pos(role.from), width: `max(${((role.to - role.from) / span) * 100}%, 8px)` }}
+                            transition={{ type: "spring", stiffness: 140, damping: 20 }}
+                            className="absolute inset-y-0 rounded-full"
+                            style={{ background: color, boxShadow: `0 0 14px ${color}99` }}
+                          />
+                        </div>
+                        <div className="mt-1.5 flex justify-between font-mono text-[10px] text-white/30">
+                          <span>{START}</span>
+                          <span>today</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+
+                  <div className="mt-7 flex items-center justify-between">
+                    <div className="flex gap-1.5">
+                      {ids.map((i) => (
+                        <button key={i} aria-label={`Show ${experience[i].company}`} onClick={() => pick(i)} className="grid h-4 w-4 cursor-pointer place-items-center">
+                          <span className="block rounded-full transition-all" style={{ height: 6, width: i === sel ? 20 : 6, background: i === sel ? color : "rgba(255,255,255,0.25)" }} />
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      {[-1, 1].map((d) => (
+                        <button
+                          key={d}
+                          aria-label={d < 0 ? "Previous role" : "Next role"}
+                          onClick={() => step(d)}
+                          className="glass grid h-10 w-10 cursor-pointer place-items-center rounded-full transition hover:bg-white/10"
+                        >
+                          {d < 0 ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          </BlurFade>
         </div>
       </div>
-
-      {/* role cards: featured current role + grid */}
-      <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-6">
-        {rows.filter((r) => visible(r.code)).map((r) => {
-          const [a, b] = r.span
-          const end = b ?? now
-          const c = COUNTRY[r.code]
-          const active = hover === r.i
-          const current = b === null
-          return (
-            <motion.li
-              layout
-              key={r.i}
-              onMouseEnter={() => setHover(r.i)}
-              onMouseLeave={() => setHover(null)}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              className={`group relative overflow-hidden rounded-xl border bg-[#161b22] transition-all duration-300 ${current ? 'lg:col-span-3 p-7 sm:p-8' : 'p-6 hover:-translate-y-1'}`}
-              style={{
-                borderColor: active || current ? `${c}88` : '#30363d',
-                boxShadow: active ? `0 18px 50px -18px ${c}88` : current ? `0 0 60px -28px ${c}` : undefined,
-                background: `radial-gradient(520px circle at 100% 0%, ${c}${current ? '26' : '14'}, transparent 60%), #161b22`,
-              }}
-            >
-              <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: `linear-gradient(90deg, ${c}, transparent)` }} />
-
-              <div className={`flex ${current ? 'flex-col sm:flex-row sm:items-center' : 'flex-col'} gap-5`}>
-                <div className="flex items-start justify-between gap-3">
-                  {logoFor(r.org) ? (
-                    <span
-                      className={`grid place-items-center rounded-xl shrink-0 bg-white overflow-hidden ${current ? 'w-16 h-16 p-2' : 'w-12 h-12 p-1.5'}`}
-                      style={{ border: `1px solid ${c}55` }}
-                    >
-                      <img src={logoFor(r.org)} alt={`${shortOrg(r.org)} logo`} className="max-w-full max-h-full object-contain" loading="lazy" />
-                    </span>
-                  ) : (
-                    <span
-                      className={`grid place-items-center rounded-xl shrink-0 font-display font-bold ${current ? 'w-16 h-16 text-xl' : 'w-12 h-12 text-sm'}`}
-                      style={{ background: `${c}22`, color: c, border: `1px solid ${c}55` }}
-                    >
-                      {initials(r.org)}
-                    </span>
-                  )}
-                  {!current && (
-                    <span className="inline-flex items-center gap-1.5 text-xs text-slate-300 border border-line rounded-full pl-1.5 pr-2.5 py-1 bg-black/20">
-                      <b className="text-[.6rem] font-bold tracking-wider px-1.5 py-0.5 rounded" style={{ background: `${c}26`, color: c }}>{r.code}</b>
-                      {r.place.split(',')[0]}
-                    </span>
-                  )}
-                </div>
-
-                <div className="grow min-w-0">
-                  {current && (
-                    <span className="inline-flex items-center gap-1.5 mb-2 text-[.65rem] font-semibold uppercase tracking-wider text-gh-green border border-gh-green/40 rounded-full px-2.5 py-0.5">
-                      <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gh-green opacity-70" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-gh-green" /></span>
-                      Current role
-                    </span>
-                  )}
-                  <h3 className={`font-display font-semibold leading-snug ${current ? 'text-2xl sm:text-3xl' : 'text-lg'}`}>{r.role}</h3>
-                  <p className="text-slate-300 mt-1">{r.org}</p>
-                  {current && (
-                    <p className="mt-2 inline-flex items-center gap-2 text-sm text-slate-400">
-                      <b className="text-[.6rem] font-bold tracking-wider px-1.5 py-0.5 rounded" style={{ background: `${c}26`, color: c }}>{r.code}</b>
-                      {r.place}
-                    </p>
-                  )}
-                </div>
-
-                {current && (
-                  <div className="sm:text-right">
-                    <p className="font-display text-4xl font-semibold text-white leading-none">{duration(a, end)}</p>
-                    <p className="font-mono text-xs mt-2" style={{ color: c }}>{r.period}</p>
-                  </div>
-                )}
-              </div>
-
-              {!current && (
-                <div className="mt-6 pt-4 border-t border-line/80 flex items-end justify-between gap-4">
-                  <div>
-                    <p className="font-display text-xl font-semibold text-white leading-none">{duration(a, end)}</p>
-                    <p className="font-mono text-[.7rem] mt-1.5" style={{ color: c }}>{r.period}</p>
-                  </div>
-                  {/* mini timeline: where this role sits in the 2017 → today career */}
-                  <div className="relative w-28 h-1.5 rounded-full bg-white/10 mb-1" aria-hidden>
-                    <i
-                      className="absolute top-0 h-full rounded-full"
-                      style={{ left: pct(a), width: `${Math.max(((end - a) / span) * 100, 4)}%`, background: c, boxShadow: `0 0 10px ${c}` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </motion.li>
-          )
-        })}
-      </ol>
     </section>
-  )
+  );
 }
